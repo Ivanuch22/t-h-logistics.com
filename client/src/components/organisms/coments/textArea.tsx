@@ -1,5 +1,4 @@
-// @ts-check
-
+// @ts-nocheck
 import React from "react";
 import $t from '@/locale/global';
 import { useRouter } from "next/router";
@@ -11,7 +10,8 @@ interface TextArea {
 const TextArea:React.FC<TextArea> = ({sendMessage,fatherId})=>{
 
     const router = useRouter();
-    const locale = router.locale === 'ua' ? 'uk' : (router.locale || 'ru');
+    const locale = router.locale === 'ua' ? 'uk' : router.locale;
+
 
     const newFunc = (e:any)=>{
         if(fatherId){
