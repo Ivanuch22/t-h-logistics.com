@@ -185,7 +185,6 @@
     resize: none;
     overflow: hidden;
     outline: 0!important;
-    -webkit-appearance: none;
     width: 100%;
     height: 100px;
 }
