@@ -11,7 +11,8 @@ interface TextArea {
 const TextArea:React.FC<TextArea> = ({sendMessage,fatherId})=>{
 
     const router = useRouter();
-    const locale = router.locale === 'ua' ? 'uk' : router.locale;
+    const locale = router.locale === 'ua' ? 'uk' : (router.locale || 'ru');
+
     const newFunc = (e:any)=>{
         if(fatherId){
             sendMessage(e,fatherId)
