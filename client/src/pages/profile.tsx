@@ -42,6 +42,10 @@ export default function Profile({
   const [modalIsVisible, setModalVisible] = useState(false);
   const [avatarModalVisible, setAvatarModalVisible] = useState(false)
 
+
+  const { publicRuntimeConfig } = getConfig();
+const { NEXT_STRAPI_BASED_URL } = publicRuntimeConfig;
+
   useEffect(() => {
     setLogin(isLogin);
   }, [isLogin]);
@@ -148,15 +152,15 @@ export default function Profile({
       // Assuming Strapi returns an array of files with a path property
       const uploadedFile = response.data[0];
       console.log(response.data);
-      setAvatarUrl(`http://127.0.0.1:1337${uploadedFile.url}`);
+      setAvatarUrl(`${NEXT_STRAPI_BASED_URL}${uploadedFile.url}`);
       updateStrapiData({
         ...user,
-        imgLink: `http://127.0.0.1:1337${uploadedFile.url}`,
+        imgLink: `${NEXT_STRAPI_BASED_URL}${uploadedFile.url}`,
         avatarId: uploadedFile.id,
       });
       setUser({
         ...user,
-        imgLink: `http://127.0.0.1:1337${uploadedFile.url}`,
+        imgLink: `${NEXT_STRAPI_BASED_URL}${uploadedFile.url}`,
         avatarId: uploadedFile.id,
       });
       setAvatarModalVisible(false)
