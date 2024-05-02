@@ -16,6 +16,7 @@ import Link from 'next/link';
 import Cookies from 'js-cookie';
 import ConfirmModal from '@/components/organisms/ModalConfirm'
 import ImgEditor from '@/components/organisms/ImgEditor';
+import getConfig from 'next/config';
 
 export default function Profile({
   menu,
