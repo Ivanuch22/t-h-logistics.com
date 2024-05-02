@@ -470,15 +470,16 @@ const Page = ({
                       )}
                       <div className="row">
                         <div className='row gap-2 align-items-center mb-2 ps-4'>
-                          <Link className='text-capitalize fw-bold w-auto  page_heading_page ' href={`/blog?heading=${heading.data?.attributes.Name}`}>{heading.data?.attributes.Name}</Link>
-                          <div className='w-auto'>{formatDateTime(admin_date)}</div>
-                          <div className='w-auto'><img className='me-1' src="https://itc.ua/wp-content/themes/ITC_6.0/images/eye2.png" height="11" width="17" alt="views icon"></img>{views}</div>
+                          <Link className='text-capitalize fw-bold w-auto part  page_heading_page ' href={`/blog?heading=${heading.data?.attributes.Name}`}>{heading.data?.attributes.Name}</Link>
+                          <div className='w-auto part'>{formatDateTime(admin_date)}</div>
                           <div className="w-auto comments part" >
                                     <Link href={`${url}#comment`} className="">
                                       <img src="https://itc.ua/wp-content/themes/ITC_6.0/images/comment_outline_24.svg" height="24" width="24" alt="comment" />
                                       <span className="disqus-comment-count" data-disqus-identifier="2259249=">{usersComments.length}</span>
                                       </Link>
                             </div>
+                          <div className='w-auto part'><img style={{marginRight: 7}} src="https://itc.ua/wp-content/themes/ITC_6.0/images/eye2.png" height="11" width="17" alt="views icon"></img>{views}</div>
+
                         </div>
 
                       </div>
