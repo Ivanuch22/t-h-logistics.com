@@ -80,7 +80,6 @@ $RECYCLE.BIN/
 *.iso
 *.jar
 *.rar
-*.tar
 *.zip
 *.com
 *.class
