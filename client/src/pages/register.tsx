@@ -343,7 +343,7 @@ export default function Home({
                             {$t[locale].auth.forgot}
                           </span>
                           <Link href="/forgot" className="txt2">
-                            Email / {$t[locale].auth.password}?
+                            {$t[locale].auth.password}?
                           </Link>
                         </li>
                         <li>

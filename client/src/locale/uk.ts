@@ -210,7 +210,7 @@ export default {
     header_button_name: "Увійти",
     send_message: "Надіслати",
     register:"Зареєструватися",
-    forgot: "Забув",
+    forgot: "Забули",
     dont_have: "Немає аккаунта?",
     already_have: "Є аккаунт",
     password: "Пароль",
