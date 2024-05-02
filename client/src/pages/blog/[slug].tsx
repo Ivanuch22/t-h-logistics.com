@@ -99,6 +99,7 @@ const Page = ({
   heading,
   extraLinks,
   code,
+  pageIds,
   article,
   howto,
   randomBanner,
@@ -118,6 +119,7 @@ const Page = ({
     setUserComments(comments)
   },[])
 const {NEXT_FRONT_URL,NEXT_MAILER } = publicRuntimeConfig;
+console.log(pageIds)
 
   const router = useRouter();
   const locale = router.locale === 'ua' ? 'uk' : router.locale;
@@ -235,14 +237,14 @@ incrementPageViews(pageRes[0].id)
     // Retrieve user information from cookies
     let getUserCookies = Cookies.get('user');
     const user = JSON.parse(getUserCookies);
-    const pageId=  pageRes[0].id
+    const blogUrl=  pageRes[0].attributes.url
 
     try {
         let payload;
         fatherId?payload = {
           data:{
             user: { connect: [{ id: user.id }] }, 
-            blog: { connect: [{ id: pageId }] }, 
+            blog: { connect: pageIds }, 
             father: { connect: [{ id: fatherId }] }, 
             Text: commentText,
             admin_date: Date.now(),
@@ -251,7 +253,7 @@ incrementPageViews(pageRes[0].id)
       }:payload= {
         data:{
           user: { connect: [{ id: user.id }] }, 
-          blog: { connect: [{ id: pageId }] }, 
+          blog: { connect: pageIds}, 
           Text: commentText,
           admin_date: Date.now(),
         }
@@ -291,7 +293,7 @@ incrementPageViews(pageRes[0].id)
             newFunc()
           }
 
-          const commentsRes = await server.get(`/comments1?filters[blog][id]=${pageId}&populate=*`);
+          const commentsRes = await server.get(`/comments1?filters[blog][url]=${url}&populate=*`);
 
             comments = commentsRes.data.data.filter(comment => comment.attributes.admin_date);
             setUserComments(comments);
@@ -497,10 +499,34 @@ export async function getServerSideProps({
 
   const pageRes = await server.get(getBlogPage(slug, $(locale)));
   const strapiMenu = await server.get(getMenu('main'));
-
   let comments = [];
   console.log(pageRes.data.data)
     const blogUrl = pageRes.data.data[0].attributes.url;
+  const pageWithThisUrl = await server.get(`/blogs?filters[url]=${blogUrl}`)
+  console.log(pageWithThisUrl.data.data, "adlskjf")
+
+  const getPagesWithUrl = async (blogUrl) => {
+    try {
+      const locales = ["uk", "ru", "en"];
+      const pagesByLocale = await Promise.all(
+        locales.map(async (locale) => {
+          const response = await server.get(`/blogs?filters[url]=${blogUrl}&locale=${locale}`);
+          return response.data.data;
+        })
+      );
+  
+      const pages = pagesByLocale.flat();
+      console.log(pages.map(page=>page.id), "Pages with URL across locales");
+  
+      return pages.map(page=>page.id);
+    } catch (error) {
+      console.error("Error fetching pages by URL:", error);
+    }
+  };
+  let pageIds =[];
+  const ald = getPagesWithUrl(blogUrl)
+  ald.then(data=>pageIds=data)
+
     const commentsRes = await server.get(`/comments1?filters[blog][url]=${blogUrl}&populate=*`);
 
     // Filter comments by admin_date
@@ -551,6 +577,7 @@ export async function getServerSideProps({
       props: {
         admin_date,
         seo_title,
+        pageIds,
         seo_description,
         page_title,
         url,
@@ -595,6 +622,7 @@ export async function getServerSideProps({
       keywords: '',
       rating: null,
       views: 0,
+      pageIds:[],
       heading: "",
       article: null,
       faq: [],
