@@ -231,6 +231,22 @@ Trans-Hope
                 return res.status(500).json({ error });
             }
         })
+        this.APP.get('/mail', async (req, res) => {
+            try {
+                const {
+                    name,
+                    body,
+                    email,
+                    locale
+                } = req.body;
+                return res.json({
+                    data: 'Message sent successfully'
+                })
+            } catch (error) {
+                console.log(error)
+                return res.status(500).json({ error });
+            }
+        })
         this.APP.post('/api/forgot', async (req, res) => {
             try {
                 const {
