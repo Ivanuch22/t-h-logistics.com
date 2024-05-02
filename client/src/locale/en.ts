@@ -211,7 +211,7 @@ export default {
     register: "Register",
     forgot: "Forgot",
     dont_have: "Don't have an account?",
-    already_have: "Already have?",
+    already_have: "Already have account?",
     password: "Password",
     name: "Name",
     confirm_text: "Change data?",

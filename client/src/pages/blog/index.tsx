@@ -149,7 +149,7 @@ export default function Home({
                             </h2>
                             <div className="hidden-sm hidden-xs pb-2">
                               <div className="entry-header" style={{ clear: "both" }}>
-                                <div className="align-items-center d-flex">
+                                <div className="align-items-center d-flex gap-3">
                                   <span className="category-color" style={{ paddingRight: 10, color: "#933758" }}>
                                     <Link href={`/blog?heading=${heading.data?.attributes.Name}`} className="text-info text-capitalize fw-bold a-not-img">
                                       {heading.data?.attributes.Name}
@@ -159,11 +159,11 @@ export default function Home({
                                     {formatDateTime(admin_date, false)}
                                   </span>
                                   <div className='view part'>
-                                    <div className='w-auto'><img className='me-1' src="https://itc.ua/wp-content/themes/ITC_6.0/images/eye2.png" height="11" width="17" alt="views icon"></img>{views}</div>
+                                    <div className='w-auto align-items-center d-flex'><img className='me-1' src="https://itc.ua/wp-content/themes/ITC_6.0/images/eye2.png" height="11" width="17" alt="views icon"></img>{views}</div>
 
                                   </div>
                                   <span className="comments part" >
-                                    <Link href={`${url}#comment`} className="">
+                                    <Link href={`${url}#comment`} className="align-items-center d-flex">
                                       <img src="https://itc.ua/wp-content/themes/ITC_6.0/images/comment_outline_24.svg" height="24" width="24" alt="comment" />
                                       <span className="disqus-comment-count" data-disqus-url="https://itc.ua/ua/novini/sylovu-bronyu-v-seriali-fallout-zrobyly-bez-vtruchannya-bethesda-a-ot-na-robochomu-pip-boy-v-kompaniyi-napolyagaly/" data-disqus-identifier="2259249 https://itc.ua/?p=2259249">{comments.data.length}</span>
                                     </Link>
