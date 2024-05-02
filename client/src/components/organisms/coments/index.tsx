@@ -101,7 +101,19 @@ const Comments = ({ data, sendMessage }) => {
                                         <div className="post-message-container">
                                             <div className="publisher-anchor-color">
                                                 <div className="post-message">
-                                                    <p>{Text}</p>
+                                                <p>
+    {Text.split(" ").map((word, index) => {
+      // Check if the word contains "http://" or "https://"
+      if (word.startsWith("http://") || word.startsWith("https://")) {
+        return (
+          <a key={index} href={word} rel="nofollow" target="_blank">
+            {word}
+          </a>
+        );
+      }
+      return ` ${word} `;
+    })}
+  </p>
                                                 </div>
                                             </div>
                                         </div>
