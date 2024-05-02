@@ -57,7 +57,7 @@ const Header = ({}: HeaderProps) => {
 useEffect(()=>{
   if(userData){
     const name = JSON.parse(userData)
-    setShowProfile( name.UserName||"")
+    setShowProfile( name.real_user_name||"")
   }
 },[isLogin,userData])
   return (

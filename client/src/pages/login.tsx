@@ -121,7 +121,7 @@ export default function Home({
       });
       console.log(response.data)
       Cookies.set('userToken', response.data.jwt, { expires: 7 }); 
-      Cookies.set('userName', response.data.user.UserName, { expires: 7 });
+      Cookies.set('userName', response.data.user.real_user_name, { expires: 7 });
       Cookies.set('user', JSON.stringify(response.data.user), { expires: 7 });
 
       login();

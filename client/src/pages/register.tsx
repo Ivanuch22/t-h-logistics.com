@@ -22,6 +22,7 @@ import { useWindowSize } from '@uidotdev/usehooks';
 import MailModal from '@/components/organisms/ModalMail';
 import getConfig from 'next/config';
 
+
 export default function Home({
   menu,
   allPages,
@@ -34,7 +35,7 @@ export default function Home({
   const locale = router.locale === 'ua' ? 'uk' : router.locale;
   const size = useWindowSize();
   const { publicRuntimeConfig } = getConfig();
-  const { NEXT_MAILER } = publicRuntimeConfig;
+  const { NEXT_MAILER ,NEXT_STRAPI_BASED_URL} = publicRuntimeConfig;
 
   const [cIndex, setCIndex] = useState(getRandomElementFromArray(captchas));
   const [isError, setIsError] = useState(false);
@@ -167,13 +168,13 @@ export default function Home({
     try {
       const response = await server.post('/auth/local/register', {
         username: uuid,
-        UserName: name,
+        real_user_name: name,
         email: email,
         password: password,
         UUIDv7: uuid,
         user_ip: ip,
         confirmed: false,
-        imgLink: "https://ff.ua/images/nophoto.png"
+        imgLink: `${NEXT_STRAPI_BASED_URL}/uploads/nophoto_c7c9abf542.png`
       });
       if (response.status === 200) {
         handleSuccess();
@@ -181,7 +182,7 @@ export default function Home({
 
         Cookies.set('userToken', response.data.jwt, { expires: 7 });
         Cookies.set('user', JSON.stringify(response.data.user), { expires: 7 });
-        Cookies.set('userName', response.data.user.UserName, { expires: 7 });
+        Cookies.set('userName', response.data.user.real_user_name, { expires: 7 });
         console.log("sdfha")
         updateUser()
         await axios.post(`${NEXT_MAILER}/api/forgot/`, {

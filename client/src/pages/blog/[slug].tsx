@@ -1,36 +1,40 @@
 // @ts-nocheck
+import { useState, useEffect,useMemo } from 'react';
+import axios from 'axios';
+import Cookies from 'js-cookie';
 
-import { server } from '@/http/index';
 import Head from 'next/head';
-import DefaultLayout from '@/components/layouts/default';
-import { Crumb } from '@/components/molecules/Breacrumbs';
+import Link from 'next/link';
+import getConfig from 'next/config';
 import { useRouter } from 'next/router';
-import $t from '@/locale/global';
-import { useState, useEffect, useMemo } from 'react';
 
+import $t from '@/locale/global';
+import { server } from '@/http/index';
+import { errorText, message404 } from '../switch';
+import DefaultLayoutContext from '@/contexts/DefaultLayoutContext';
+
+import { $ } from '@/utils/utils';
 import genRatingData from '@/utils/generators/genRatingData';
 import genFaqData from '@/utils/generators/genFaqData';
 import genArticleData from '@/utils/generators/genArticleData';
-import axios from 'axios';
 import getHowToData from '@/utils/generators/getHowToData';
 import { getMenu, getBlogPage } from '@/utils/queries';
-import { $ } from '@/utils/utils';
-import ExtraLinks from '@/components/organisms/ExtraLinks';
 import genListItemData from '@/utils/generators/genListItemData';
-import getConfig from 'next/config';
-import Sidebar from '@/components/organisms/Sidebar';
 import getHeaderFooterMenus from '@/utils/getHeaderFooterMenus';
-import DefaultLayoutContext from '@/contexts/DefaultLayoutContext';
-import { errorText, message404 } from '../switch';
-import getRandomBanner from '@/utils/getRandomBanner';
 import isPageWithLocaleExists from '@/utils/isPageWithLocaleExists';
-import Link from 'next/link';
-import MostPopular from '@/components/organisms/MostPopular';
+import getRandomBanner from '@/utils/getRandomBanner';
 import getRandomPopularNews from '@/utils/getRandomPopularNews';
 import formatDateTime from '@/utils/formateDateTime';
-const { publicRuntimeConfig } = getConfig();
-import Cookies from 'js-cookie';
+import getPagesIdWithSameUrl from "@/utils/getPagesIdWithSameUrl"
+
+import DefaultLayout from '@/components/layouts/default';
+import { Crumb } from '@/components/molecules/Breacrumbs';
+import Sidebar from '@/components/organisms/Sidebar';
+import MostPopular from '@/components/organisms/MostPopular';
 import Comments from '@/components/organisms/coments';
+
+const { publicRuntimeConfig } = getConfig();
+
 export interface PageAttibutes {
   seo_title: string;
   createdAt: string;
@@ -114,36 +118,41 @@ const Page = ({
   comments,
   socialData,
 }: PageAttibutes) => {
-  const [usersComments, setUserComments] = useState([]);
-  useEffect(()=>{
-    setUserComments(comments)
-  },[])
-const {NEXT_FRONT_URL,NEXT_MAILER } = publicRuntimeConfig;
-console.log(pageIds)
 
+  const [usersComments, setUserComments] = useState([]);
+  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [errorCode, setErrorCode] = useState<number | null>(null);
+
+  const { NEXT_FRONT_URL, NEXT_MAILER } = publicRuntimeConfig;
   const router = useRouter();
   const locale = router.locale === 'ua' ? 'uk' : router.locale;
+
   useEffect(() => {
-const incrementPageViews = async (pageId) => {
-  const viewedPages = (Cookies.get('viewedPages') || '').split(',');
-  if (viewedPages.includes(""+pageId)) {
-    console.log('Already viewed this page');
-    return;
-  }
-  try {
-    await axios.post('/api/increment-views', { id: pageId });
-    viewedPages.push(pageId);
-    Cookies.set('viewedPages', viewedPages.join(','), {
-      expires: 1, // Кука діє один день
-      sameSite: 'strict', // Щоб уникнути CSRF
-      secure: true, // Використовуйте це в продакшн
-    });
-  } catch (error) {
-    console.error('Error incrementing page views:', error);
-  }
-};
-incrementPageViews(pageRes[0].id)
+    setUserComments(comments)
+  }, [])
+//зміна кількості пергляду сторінки
+  useEffect(() => {
+    const incrementPageViews = async (pageId) => {
+      const viewedPages = (Cookies.get('viewedPages') || '').split(',');
+      if (viewedPages.includes("" + pageId)) {
+        console.log('Already viewed this page');
+        return;
+      }
+      try {
+        await axios.post('/api/increment-views', { id: pageId });
+        viewedPages.push(pageId);
+        Cookies.set('viewedPages', viewedPages.join(','), {
+          expires: 1, 
+          sameSite: 'strict',
+          secure: true,
+        });
+      } catch (error) {
+        console.error('Error incrementing page views:', error);
+      }
+    };
+    incrementPageViews(pageRes[0].id)
   }, [pageRes[0].id]);
+
   // Эта функция рекурсивно пробегаем по объекту навигации который мы возвращаем из функции getServerSideProps
   // и генерирует одномерный мессив объектов который будет в последующем преобразован в компонент breadcrumbs
   const findAncestors = (obj: any[], url: string) => {
@@ -207,18 +216,19 @@ incrementPageViews(pageRes[0].id)
     return acc;
   }, ``);
 
-  const [errorMessage, setErrorMessage] = useState<string>('');
-  const [errorCode, setErrorCode] = useState<number | null>(null);
-
-  console.log(NEXT_MAILER,NEXT_FRONT_URL)
+  const shortenedTitle = useMemo<string>(() => {
+    return page_title.length > 65
+      ? `${page_title.slice(0, 65)}...`
+      : page_title;
+  }, [page_title]);
 
   const sendMessage = async (e, fatherId) => {
     e.preventDefault(); // Prevent default form submission behavior
 
     const userToken = Cookies.get('userToken'); // Retrieve user token from cookies
     if (!userToken) {
-        router.push('/login');
-        return;
+      router.push('/login');
+      return;
     }
 
     // Find the comment text area for this form
@@ -227,96 +237,91 @@ incrementPageViews(pageRes[0].id)
     const commentText = textAreaElement.value; // Retrieve its content
 
     if (!commentText) {
-        alert('Comment cannot be empty');
-        return;
+      alert('Comment cannot be empty');
+      return;
     }
 
     // Clear the text area content after retrieval
-    textAreaElement.value = ''; 
+    textAreaElement.value = '';
 
     // Retrieve user information from cookies
     let getUserCookies = Cookies.get('user');
     const user = JSON.parse(getUserCookies);
-    const blogUrl=  pageRes[0].attributes.url
+    const blogUrl = pageRes[0].attributes.url
 
     try {
-        let payload;
-        fatherId?payload = {
-          data:{
-            user: { connect: [{ id: user.id }] }, 
-            blog: { connect: pageIds }, 
-            father: { connect: [{ id: fatherId }] }, 
-            Text: commentText,
-            admin_date: Date.now(),
-          }
-
-      }:payload= {
-        data:{
-          user: { connect: [{ id: user.id }] }, 
-          blog: { connect: pageIds}, 
+      let payload;
+      fatherId ? payload = {
+        data: {
+          user: { connect: [{ id: user.id }] },
+          blog: { connect: pageIds },
+          father: { connect: [{ id: fatherId }] },
           Text: commentText,
           admin_date: Date.now(),
         }
-            };
-        
-        const response = await server.post('/comments1', payload, {
-            headers: {
-                Authorization: `Bearer ${userToken}`,
-            },
-        });
 
-        if (response.status === 200) {
-            let comments = [];
-            let updateChildrenInFather;
-            fatherId? updateChildrenInFather = await server.put(`/comments1/${fatherId}`, {
-                data: {
-                  children: {connect: [response.data.data.id]}
-                }
-            }, {
-              headers: {
-                  Authorization: `Bearer ${userToken}`,
-              },
-          }):updateChildrenInFather=null;
-          if(fatherId){
-            const newFunc = async ()=>{
-              const fatherComment = await server.get(`/comments1/${fatherId}?populate=*`);
-              if(fatherComment.data.data.attributes.user.data.attributes.sendMessage){
-                const response = await axios.post(`${NEXT_MAILER}/api/comment-message`, {
-                  email: fatherComment.data.data.attributes.user.data.attributes.email,
-                  locale: fatherComment.data.data.attributes.locale,
-                  userName: fatherComment.data.data.attributes.user.data.attributes.UserName,
-                  link: `${NEXT_FRONT_URL}${url}#comment`
-                });
-                console.log(response.data)
-              }
-            }
-            newFunc()
+      } : payload = {
+        data: {
+          user: { connect: [{ id: user.id }] },
+          blog: { connect: pageIds },
+          Text: commentText,
+          admin_date: Date.now(),
+        }
+      };
+
+      const response = await server.post('/comments1', payload, {
+        headers: {
+          Authorization: `Bearer ${userToken}`,
+        },
+      });
+
+      if (response.status === 200) {
+        let comments = [];
+        let updateChildrenInFather;
+        fatherId ? updateChildrenInFather = await server.put(`/comments1/${fatherId}`, {
+          data: {
+            children: { connect: [response.data.data.id] }
           }
-
-          const commentsRes = await server.get(`/comments1?filters[blog][url]=${url}&populate=*`);
-
-            comments = commentsRes.data.data.filter(comment => comment.attributes.admin_date);
-            setUserComments(comments);
-        } else {
-            console.log('Error posting comment:', response.status, response.data);
+        }, {
+          headers: {
+            Authorization: `Bearer ${userToken}`,
+          },
+        }) : updateChildrenInFather = null;
+        if (fatherId) {
+          const newFunc = async () => {
+            const fatherComment = await server.get(`/comments1/${fatherId}?populate=*`);
+            if (fatherComment.data.data.attributes.user.data.attributes.sendMessage) {
+              const response = await axios.post(`${NEXT_MAILER}/api/comment-message`, {
+                email: fatherComment.data.data.attributes.user.data.attributes.email,
+                locale: fatherComment.data.data.attributes.locale,
+                userName: fatherComment.data.data.attributes.user.data.attributes.real_user_name,
+                link: `${NEXT_FRONT_URL}${url}#comment`
+              });
+            }
+          }
+          newFunc()
         }
+
+        const getBlogComments = await server.get(`/comments1?filters[blog][url]=${url}&populate=*&sort[0]=admin_date`);
+
+        comments = getBlogComments.data.data.filter(comment => comment.attributes.admin_date);
+        setUserComments(comments);
+      } else {
+        console.log('Error posting comment:', response.status, response.data);
+      }
     } catch (error) {
-        console.error('Error during comment submission:', error);
+      console.error('Error during comment submission:', error);
 
-        if (error.response && error.response.data) {
-            const { message, details } = error.response.data.error || {};
-            console.error('Error details:', message, details);
-        }
+      if (error.response && error.response.data) {
+        const { message, details } = error.response.data.error || {};
+        console.error('Error details:', message, details);
+      }
     }
-};
+  };
 
 
   return (
     <>
-      {/* 
-        head - это компонент который предоставляет нам next.js сюда вы можете прописывать разные мета теги,
-        title и тд, если вы хотите добавить стили или скрипты к странице - это лучше делать в файле _document
-       */}
       <Head>
         <title>{seo_title}</title>
         <meta name="description" content={seo_description} />
@@ -380,19 +385,34 @@ incrementPageViews(pageRes[0].id)
                         className="col-12 text-center text-lg-start"
                         style={{ marginTop: '40px', marginBottom: '50px' }}
                       >
+<h1 className="text-white animated d-flex align-items-center flex-wrap slideInLeft">
+                          <Link href={`/blog`}>
+                            <h2 className="d-inline text-white heading_title">{$t[locale].blog.all} | </h2>
+                          </Link>
+                          {headings.map((heading, index) => {
+                            const headingName = heading?.attributes.Name;
+                            const isLast = index === headings.length - 1;
 
-                        <h1 className="display-5 text-white animated slideInLeft">
-                          {page_title}
-                        </h1>
-                        
-                        <h3 className="my-sm-2 text-white animated slideInLeft">
-                        <Link href={`/blog`} ><h2 className="d-inline text-white ">{$t[locale].blog.all} | </h2></Link>
-                          {headings.map(heading => {
                             return (
-                              <Link href={`/blog?heading=${heading?.attributes.Name}`} key={heading.id} ><h2 className="d-inline text-white ">{heading?.attributes.Name.charAt(0).toUpperCase() + heading?.attributes.Name.slice(1)} | </h2></Link>
-                            )
+                              <div key={heading.id} className='d-flex gap-2 align-items-center  '>
+                                <Link href={`/blog?heading=${headingName}`}>
+  <h2 className="d-inline heading_title text-white heading_name">
+    {headingName.charAt(0).toUpperCase() + headingName.slice(1)}
+  </h2>
+</Link>
+                                {!isLast && <span className="d-inline heading_title text-white"> | </span>}
+                              </div>
+                            );
                           })}
-                        </h3>
+                        </h1>
+                        <h1 className="d-none text-white animated slideInLeft">
+                          {shortenedTitle}
+                        </h1>
+                        <h1 className="display-5 text-white animated slideInLeft">
+                          {shortenedTitle}
+                        </h1>
+
+                        
                         <nav aria-label="breadcrumb">
                           <ol className="breadcrumb justify-content-center justify-content-lg-start animated slideInLeft">
                             <li className="breadcrumb-item">
@@ -407,7 +427,7 @@ incrementPageViews(pageRes[0].id)
                             </li>
                             <li className="breadcrumb-item">
                               <a className="text-white" href="#">
-                                {seo_title ? page_title : '404'}
+                                {seo_title ? shortenedTitle : '404'}
                               </a>
                             </li>
                           </ol>
@@ -449,15 +469,21 @@ incrementPageViews(pageRes[0].id)
                         </div>
                       )}
                       <div className="row">
-                        <div className='row gap-2 align-items-center mb-2'>
-                          <Link className='text-capitalize fw-bold w-auto  p-1 px-2 bg-body text-white rounded-2' href={`/blog?heading=${heading.data?.attributes.Name}`}>{heading.data?.attributes.Name}</Link>
+                        <div className='row gap-2 align-items-center mb-2 ps-4'>
+                          <Link className='text-capitalize fw-bold w-auto  page_heading_page ' href={`/blog?heading=${heading.data?.attributes.Name}`}>{heading.data?.attributes.Name}</Link>
                           <div className='w-auto'>{formatDateTime(admin_date)}</div>
                           <div className='w-auto'><img className='me-1' src="https://itc.ua/wp-content/themes/ITC_6.0/images/eye2.png" height="11" width="17" alt="views icon"></img>{views}</div>
+                          <div className="w-auto comments part" >
+                                    <Link href={`${url}#comment`} className="">
+                                      <img src="https://itc.ua/wp-content/themes/ITC_6.0/images/comment_outline_24.svg" height="24" width="24" alt="comment" />
+                                      <span className="disqus-comment-count" data-disqus-identifier="2259249=">{usersComments.length}</span>
+                                      </Link>
+                            </div>
                         </div>
 
                       </div>
                       <div dangerouslySetInnerHTML={{ __html: body }}></div>
-                      <Comments data={usersComments} sendMessage={sendMessage}/>
+                      <Comments data={usersComments} sendMessage={sendMessage} />
                     </div>
                   </div>
                   <div className=' col-md-auto  mx-360'>
@@ -481,65 +507,32 @@ export async function getServerSideProps({
   res,
   resolvedUrl,
 }: Query) {
-  const randomBanner = await getRandomBanner(locale);
-  const mostPopular = await getRandomPopularNews(locale);
-
   const slug = `/blog/${query?.slug}` || '';
+  const Locale = locale === 'ua' ? 'uk' : locale;
+
+  const randomBanner = await getRandomBanner(Locale);
+  const mostPopular = await getRandomPopularNews(Locale);
 
   let headings;
+  let comments = [];
+  let pageIds
+
   try {
-    const getHeadings = await server.get(
-      `/headings?locale=${locale === 'ua' ? 'uk' : locale}`
-    );
+    const getHeadings = await server.get(`/headings?locale=${Locale}`);
     headings = getHeadings.data.data;
   } catch (e) {
     console.error("Error fetching headings data", e);
     headings = [];
   }
 
-  const pageRes = await server.get(getBlogPage(slug, $(locale)));
+  const pageRes = await server.get(getBlogPage(slug, $(Locale)));
   const strapiMenu = await server.get(getMenu('main'));
-  let comments = [];
-  console.log(pageRes.data.data)
-    const blogUrl = pageRes.data.data[0].attributes.url;
-  const pageWithThisUrl = await server.get(`/blogs?filters[url]=${blogUrl}`)
-  console.log(pageWithThisUrl.data.data, "adlskjf")
 
-  const getPagesWithUrl = async (blogUrl) => {
-    try {
-      const locales = ["uk", "ru", "en"];
-      const pagesByLocale = await Promise.all(
-        locales.map(async (locale) => {
-          const response = await server.get(`/blogs?filters[url]=${blogUrl}&locale=${locale}`);
-          return response.data.data;
-        })
-      );
-  
-      const pages = pagesByLocale.flat();
-      console.log(pages.map(page=>page.id), "Pages with URL across locales");
-  
-      return pages.map(page=>page.id);
-    } catch (error) {
-      console.error("Error fetching pages by URL:", error);
-    }
-  };
-  let pageIds =[];
-  const ald = getPagesWithUrl(blogUrl)
-  ald.then(data=>pageIds=data)
-
-    const commentsRes = await server.get(`/comments1?filters[blog][url]=${blogUrl}&populate=*`);
-
-    // Filter comments by admin_date
-    comments = commentsRes.data.data.filter(comment => comment.attributes.admin_date);
-
-
-  const strapiLocale = locale === 'ua' ? 'uk' : locale;
-  const { menu, allPages, footerMenus, footerGeneral } =
-    await getHeaderFooterMenus(strapiLocale);
+  const { menu, allPages, footerMenus, footerGeneral } =await getHeaderFooterMenus(Locale);
 
   const crumbs = strapiMenu.data.data[0].attributes.items.data;
 
-  if (!isPageWithLocaleExists(resolvedUrl, locale, allPages)) {
+  if (!isPageWithLocaleExists(resolvedUrl, Locale, allPages)) {
     res.statusCode = 404;
   }
 
@@ -565,6 +558,9 @@ export async function getServerSideProps({
       publishedAt,
       howto,
     }: PageAttibutes = pageRes.data?.data[0]?.attributes;
+    await getPagesIdWithSameUrl(url).then(data => pageIds = data)
+    const getBlogComments = await server.get(`/comments1?filters[blog][url]=${url}&populate=*&sort[0]=admin_date`);
+    comments = getBlogComments.data.data.filter(comment => comment.attributes.admin_date);
 
     // replace port in images
     const regex = /src="https:\/\/t-h-logistics\.com:17818\/uploads\//g;
@@ -593,7 +589,7 @@ export async function getServerSideProps({
         extraLinks: genListItemData(extraLinks),
         rating: genRatingData(rating.data),
         faq: genFaqData(faq.data),
-        article: genArticleData(article, publishedAt, locale, slug),
+        article: genArticleData(article, publishedAt, Locale, slug),
         howto: getHowToData(howto),
         randomBanner,
         mostPopular,
@@ -622,7 +618,7 @@ export async function getServerSideProps({
       keywords: '',
       rating: null,
       views: 0,
-      pageIds:[],
+      pageIds: [],
       heading: "",
       article: null,
       faq: [],
