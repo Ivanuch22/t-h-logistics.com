@@ -31,7 +31,6 @@ import formatDateTime from '@/utils/formateDateTime';
 const { publicRuntimeConfig } = getConfig();
 import Cookies from 'js-cookie';
 import Comments from '@/components/organisms/coments';
-const { NEXT_STRAPI_BASED_URL } = publicRuntimeConfig;
 export interface PageAttibutes {
   seo_title: string;
   createdAt: string;
@@ -118,8 +117,7 @@ const Page = ({
   useEffect(()=>{
     setUserComments(comments)
   },[])
-  const { publicRuntimeConfig } = getConfig();
-const { NEXT_FRONT_URL,MAILER_URL } = publicRuntimeConfig;
+const {NEXT_FRONT_URL,NEXT_MAILER } = publicRuntimeConfig;
 
   const router = useRouter();
   const locale = router.locale === 'ua' ? 'uk' : router.locale;
@@ -210,6 +208,7 @@ incrementPageViews(pageRes[0].id)
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [errorCode, setErrorCode] = useState<number | null>(null);
 
+  console.log(NEXT_MAILER,NEXT_FRONT_URL)
 
   const sendMessage = async (e, fatherId) => {
     e.preventDefault(); // Prevent default form submission behavior
@@ -258,7 +257,6 @@ incrementPageViews(pageRes[0].id)
         }
             };
         
-        console.log(payload)
         const response = await server.post('/comments1', payload, {
             headers: {
                 Authorization: `Bearer ${userToken}`,
@@ -281,7 +279,7 @@ incrementPageViews(pageRes[0].id)
             const newFunc = async ()=>{
               const fatherComment = await server.get(`/comments1/${fatherId}?populate=*`);
               if(fatherComment.data.data.attributes.user.data.attributes.sendMessage){
-                const response = await axios.post(`${MAILER_URL}/api/comment-message`, {
+                const response = await axios.post(`${process.env.NEXT_MAILER}/api/comment-message`, {
                   email: fatherComment.data.data.attributes.user.data.attributes.email,
                   locale: fatherComment.data.data.attributes.locale,
                   userName: fatherComment.data.data.attributes.user.data.attributes.UserName,
