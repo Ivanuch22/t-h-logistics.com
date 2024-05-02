@@ -257,7 +257,6 @@ Trans-Hope
                 if (['ru', 'uk', 'en'].includes(locale)) {
                     validatedLocale = locale;
                 }
-                console.log("hello")
                 const mailoptions = {
                     from: this.EMAIL,
                     to: email,
@@ -289,7 +288,6 @@ Trans-Hope
                     validatedLocale = locale;
                 }
                 const messagesss = messageFunc(link,validatedLocale);
-                console.log(messagesss)
                 const mailoptions = {
                     from: this.EMAIL,
                     to: email,
