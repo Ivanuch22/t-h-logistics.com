@@ -34,7 +34,7 @@ export default function Home({
   const locale = router.locale === 'ua' ? 'uk' : router.locale;
   const size = useWindowSize();
   const { publicRuntimeConfig } = getConfig();
-  const { MAILER_URL } = publicRuntimeConfig;
+  const { NEXT_MAILER } = publicRuntimeConfig;
 
   const [cIndex, setCIndex] = useState(getRandomElementFromArray(captchas));
   const [isError, setIsError] = useState(false);
@@ -178,14 +178,16 @@ export default function Home({
       if (response.status === 200) {
         handleSuccess();
         login();
+
+        Cookies.set('userToken', response.data.jwt, { expires: 7 });
+        Cookies.set('user', JSON.stringify(response.data.user), { expires: 7 });
+        Cookies.set('userName', response.data.user.UserName, { expires: 7 });
+        console.log("sdfha")
+        updateUser()
         await axios.post(`${NEXT_MAILER}/api/forgot/`, {
           email: email,
           locale: locale,
         });
-        Cookies.set('userToken', response.data.jwt, { expires: 7 });
-        Cookies.set('user', JSON.stringify(response.data.user), { expires: 7 });
-        Cookies.set('userName', response.data.user.UserName, { expires: 7 });
-        updateUser()
       } else {
         return handleError(error.response.data.error.message);
       }
