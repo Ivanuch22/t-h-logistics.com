@@ -1,28 +1,28 @@
 //@ts-nocheck
 
+import Link from 'next/link';
 import Head from 'next/head';
-import DefaultLayout from '@/components/layouts/default';
-import {  useState } from 'react';
 import { server } from '@/http';
 import Script from 'next/script';
-import { useRouter } from 'next/router';
 import $t from '@/locale/global';
-import Link from 'next/link';
-import { PaginationControl } from 'react-bootstrap-pagination-control';
-import getHeaderFooterMenus from '@/utils/getHeaderFooterMenus';
-import getRandomBanner from '@/utils/getRandomBanner';
-import DefaultLayoutContext from '@/contexts/DefaultLayoutContext';
-import Sidebar from '@/components/organisms/Sidebar';
-import MostPopular from '@/components/organisms/MostPopular';
-import formatDateTime from '@/utils/formateDateTime';
+import { useState } from 'react';
 import getConfig from 'next/config';
+import { useRouter } from 'next/router';
+import formatDateTime from '@/utils/formateDateTime';
+import Sidebar from '@/components/organisms/Sidebar';
+import getRandomBanner from '@/utils/getRandomBanner';
+import DefaultLayout from '@/components/layouts/default';
+import MostPopular from '@/components/organisms/MostPopular';
 import getRandomPopularNews from '@/utils/getRandomPopularNews';
+import getHeaderFooterMenus from '@/utils/getHeaderFooterMenus';
+import DefaultLayoutContext from '@/contexts/DefaultLayoutContext';
+import { PaginationControl } from 'react-bootstrap-pagination-control';
 
 const { publicRuntimeConfig } = getConfig();
 const { NEXT_STRAPI_BASED_URL } = publicRuntimeConfig;
 
 export default function Home({
-  tags,
+  pages,
   headings,
   pagination,
   randomBanner,
@@ -33,19 +33,19 @@ export default function Home({
   mostPopular,
   socialData,
 }) {
-  console.log(tags)
   const router = useRouter();
-  const [paginationPage, setPaginationPage] = useState(pagination.page);
 
   const locale = router.locale === 'ua' ? 'uk' : router.locale;
   const { query } = router;
   const { perPage } = query;
+  const [paginationPage, setPaginationPage] = useState(pagination.page);
+
 
   function sanitizeImageUrl(url) {
     return url.replace(/[^a-zA-Z0-9-_.~:/?#[\]@!$&'()*+,;=%]/g, '');
   }
 
-  const goToPage = n =>{
+  const goToPage = n => {
     router.push(`/blog?page=${n}&perPage=${perPage ? perPage : '15'}`);
   }
 
@@ -85,12 +85,24 @@ export default function Home({
                         className="col-12 text-center text-lg-start"
                         style={{ marginTop: '40px', marginBottom: '50px' }}
                       >
-                        <h1 className=" text-white animated slideInLeft">
-                          <Link href={`/blog`} ><h2 className="d-inline text-white ">{$t[locale].blog.all} | </h2></Link>
-                          {headings.map(heading => {
+                        <h1 className="text-white animated d-flex align-items-center flex-wrap slideInLeft">
+                          <Link href={`/blog`}>
+                            <h2 className="d-inline text-white heading_title">{$t[locale].blog.all} | </h2>
+                          </Link>
+                          {headings.map((heading, index) => {
+                            const headingName = heading?.attributes.Name;
+                            const isLast = index === headings.length - 1;
+
                             return (
-                              <Link href={`/blog?heading=${heading?.attributes.Name}`} key={heading.id} ><h2 className="d-inline text-white ">{heading?.attributes.Name.charAt(0).toUpperCase() + heading?.attributes.Name.slice(1)} | </h2></Link>
-                            )
+                              <div key={heading.id} className='d-flex gap-2 align-items-center  '>
+                                <Link href={`/blog?heading=${headingName}`}>
+  <h2 className="d-inline heading_title text-white heading_name">
+    {headingName.charAt(0).toUpperCase() + headingName.slice(1)}
+  </h2>
+</Link>
+                                {!isLast && <span className="d-inline heading_title text-white"> | </span>}
+                              </div>
+                            );
                           })}
                         </h1>
                         <nav aria-label="breadcrumb">
@@ -116,8 +128,8 @@ export default function Home({
               <div className=" p-3">
                 <div className="row">
                   <div className='ps-5 col article-col gap-5 pe-md-2 d-flex flex-column'>
-                    {tags.map((page, index) => {
-                      const { page_title, admin_date, url, heading,comments} = page.attributes;
+                    {pages.map((page, index) => {
+                      const { page_title, admin_date, url, heading, comments, views } = page.attributes;
                       const imageUrl = (page.attributes.image.data) ? page.attributes.image.data.attributes.url : "";
 
                       return (
@@ -146,12 +158,16 @@ export default function Home({
                                   <span className="date part">
                                     {formatDateTime(admin_date, false)}
                                   </span>
+                                  <div className='view part'>
+                                    <div className='w-auto'><img className='me-1' src="https://itc.ua/wp-content/themes/ITC_6.0/images/eye2.png" height="11" width="17" alt="views icon"></img>{views}</div>
+
+                                  </div>
                                   <span className="comments part" >
                                     <Link href={`${url}#comment`} className="">
                                       <img src="https://itc.ua/wp-content/themes/ITC_6.0/images/comment_outline_24.svg" height="24" width="24" alt="comment" />
                                       <span className="disqus-comment-count" data-disqus-url="https://itc.ua/ua/novini/sylovu-bronyu-v-seriali-fallout-zrobyly-bez-vtruchannya-bethesda-a-ot-na-robochomu-pip-boy-v-kompaniyi-napolyagaly/" data-disqus-identifier="2259249 https://itc.ua/?p=2259249">{comments.data.length}</span>
-                                      </Link>
-                                    </span>
+                                    </Link>
+                                  </span>
                                 </div>
                               </div>
                             </div>
@@ -191,45 +207,39 @@ export default function Home({
 }
 export async function getServerSideProps({ query, locale }) {
   const { page = 1, perPage = 5, heading = '' } = query;
+  let pages, pagination, headings;
+
+  const Locale = locale === 'ua' ? 'uk' : locale;
+  const filter = heading ? `&filters[heading][Name]=${heading}` : '';
+
 
   const randomBanner = await getRandomBanner(locale);
   const mostPopular = await getRandomPopularNews(locale);
 
-  const filter = heading ? `&filters[heading][Name]=${heading}` : '';
-
-  let tags, pagination, headings;
   try {
-    const getHeadings = await server.get(
-      `/headings?locale=${locale === 'ua' ? 'uk' : locale}`
-    );
-    headings = getHeadings.data.data;
+    const getHeadings = await server.get(`/headings?locale=${Locale}`);
+    headings = getHeadings.data.data
   } catch (e) {
     console.error("Error fetching headings data", e);
     headings = [];
   }
   try {
-    const res = await server.get(
-      `/blogs?populate=*&locale=${locale === 'ua' ? 'uk' : locale}&pagination[page]=${page}&pagination[pageSize]=${perPage}${filter}&sort[0]=admin_date:desc`
-    );
-    tags = res.data.data;
-    pagination = res.data.meta.pagination;
+    const getPages = await server.get(`/blogs?populate=*&locale=${Locale}&pagination[page]=${page}&pagination[pageSize]=${perPage}${filter}&sort[0]=admin_date:desc`);
+    pages = getPages.data.data;
+    pagination = getPages.data.meta.pagination;
   } catch (e) {
     console.error("Error fetching data", e);
   }
 
   try {
-    const strapiLocale = locale === 'ua' ? 'uk' : locale;
-
-    const { menu, allPages, footerMenus, footerGeneral } =
-      await getHeaderFooterMenus(strapiLocale);
-
+    const { menu, allPages, footerMenus, footerGeneral } = await getHeaderFooterMenus(Locale);
     const socialRes = await server.get('/social');
     const socialData = socialRes.data.data.attributes;
 
     return {
       props: {
         randomBanner,
-        tags,
+        pages,
         headings,
         mostPopular,
         pagination,
@@ -246,7 +256,7 @@ export async function getServerSideProps({ query, locale }) {
     return {
       props: {
         randomBanner,
-        tags,
+        pages,
         pagination,
         menu: [],
         allPages: [],

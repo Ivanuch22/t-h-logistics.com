@@ -246,7 +246,7 @@ export default {
   },
   blog:{
     title: "Блог",
-    mostpopular:"Найпопулярніші",
+    mostpopular:"Блог, найпопулярніші",
     all: 'Все підряд'
   },
   comment: {

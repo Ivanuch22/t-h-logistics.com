@@ -25,7 +25,9 @@ export default function Profile({
   footerGeneral,
   socialData,
 }) {
-  const noImgUrl = 'https://ff.ua/images/nophoto.png';
+  const { publicRuntimeConfig } = getConfig();
+  const { NEXT_STRAPI_BASED_URL } = publicRuntimeConfig;
+  const noImgUrl = `${NEXT_STRAPI_BASED_URL}/uploads/nophoto_c7c9abf542.png`;
 
   const [isError, setIsError] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -44,8 +46,8 @@ export default function Profile({
   const [avatarModalVisible, setAvatarModalVisible] = useState(false)
 
 
-  const { publicRuntimeConfig } = getConfig();
-const { NEXT_STRAPI_BASED_URL } = publicRuntimeConfig;
+
+
 
   useEffect(() => {
     setLogin(isLogin);
@@ -74,18 +76,29 @@ const { NEXT_STRAPI_BASED_URL } = publicRuntimeConfig;
     if(userCookies.birthday){
       setDefaultBirthday(userCookies.birthday)
     }
+    console.log(user)
+
   },[user])
 
 
   async function updateStrapiData(userObj: object) {
+    console.log(userObj)
+    const newObj = {
+      imgLink: userObj.imgLink,
+      avatarId:userObj.avatarId,
+      birthday:userObj.birthday,
+      email:userObj.email,
+      real_user_name:userObj.real_user_name,
+      sendMessage: userObj.sendMessage
+    }
     try {
-      const strapiRes = await server.put(`/users/${userObj.id}`, userObj, {
+      const strapiRes = await server.put(`/users/${userObj.id}`, newObj, {
         headers: {
           Authorization: `Bearer ${Cookies.get('userToken')}`, // Вставте токен аутентифікації Strapi сюди
         },
       });
       Cookies.set('user', JSON.stringify(strapiRes.data), { expires: 7 });
-      Cookies.set('userName', JSON.stringify(strapiRes.data.UserName), {
+      Cookies.set('userName', JSON.stringify(strapiRes.data.real_user_name), {
         expires: 7,
       });
       return strapiRes;
@@ -193,7 +206,7 @@ const { NEXT_STRAPI_BASED_URL } = publicRuntimeConfig;
         imgLink: null,
         avatarId: null,
       });
-      setAvatarUrl('https://ff.ua/images/nophoto.png');
+      setAvatarUrl(`${NEXT_STRAPI_BASED_URL}/uploads/nophoto_c7c9abf542.png`);
     } catch (error) {
       console.error('Error deleting image: ', error);
     } finally {
@@ -220,6 +233,24 @@ const { NEXT_STRAPI_BASED_URL } = publicRuntimeConfig;
     Cookies.set("user", JSON.stringify(obj))
     setIsDisabled(false);
   }
+  const handleDateChange = e => {
+  // Get the value from the input
+  const inputValue = e.target.value;
+
+  // Parse the date value into a JavaScript Date object
+  const date = new Date(inputValue);
+
+  if (!isNaN(date.getTime())) { // Check if the date is valid
+    // Format the date as yyyy-mm-dd
+    const formattedDate = date.toISOString().split('T')[0];
+
+    // Update the user's birthday
+    onChange({ ...user, birthday: formattedDate });
+  } else {
+    console.error("Invalid date format");
+  }
+};
+
 
 
 
@@ -379,7 +410,7 @@ const { NEXT_STRAPI_BASED_URL } = publicRuntimeConfig;
                             />
                           </div>
                           <div className="flex-grow-1 ms-3">
-                            <h5>{user.UserName}</h5>
+                            <h5>{user.real_user_name}</h5>
                             <p className="mb-0">{user.email}</p>
                           </div>
 
@@ -428,7 +459,7 @@ const { NEXT_STRAPI_BASED_URL } = publicRuntimeConfig;
                               />
                             </div>
                             <div className="flex-grow-1 ms-3">
-                              <h5>{user.UserName}</h5>
+                              <h5>{user.real_user_name}</h5>
                               <p className="mb-0">{user.email}</p>
                             </div>
                           </div>
@@ -449,10 +480,10 @@ const { NEXT_STRAPI_BASED_URL } = publicRuntimeConfig;
                                 onChange={e =>
                                   onChange({
                                     ...user,
-                                    UserName: e.target.value,
+                                    real_user_name: e.target.value,
                                   })
                                 }
-                                value={user.UserName}
+                                value={user.real_user_name}
                                 placeholder="Ім&#039;я"
                                 required
                               />
@@ -491,8 +522,10 @@ const { NEXT_STRAPI_BASED_URL } = publicRuntimeConfig;
                               type="date"
                               name="birthday"
                               id="birthday"
-                              onChange={e =>
+                              onChange={e =>{
                                 onChange({ ...user, birthday: e.target.value })
+                                console.log(e.target.value)
+                              }
                               }
                               value={defaultBirthday}
                               className="form-control"
@@ -531,6 +564,7 @@ const { NEXT_STRAPI_BASED_URL } = publicRuntimeConfig;
                           Зберегти зміни
                         </button>
                         <button
+                          type='button'
                           className="btn-danger btn ml-4"
                           onClick={logout}
                         >

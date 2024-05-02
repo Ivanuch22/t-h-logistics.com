@@ -246,7 +246,7 @@ export default {
   },
   blog:{
     title: "Blog",
-    mostpopular:"Most Popular",
+    mostpopular:"Blog, most popular",
     all: 'All heading'
 
   },

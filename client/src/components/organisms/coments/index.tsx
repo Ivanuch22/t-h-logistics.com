@@ -61,13 +61,13 @@ const Comments = ({ data, sendMessage }) => {
                 {comments.map(comment => {
                     const commentId = comment.id;
                     const { Text, admin_date, father, children, user } = comment.attributes;
-                    const { imgLink, UserName } = user.data.attributes;
+                    const { imgLink, real_user_name } = user.data.attributes;
                     const findFatherName = ()=>{
                         const name = comments.find(element=>{
                             return element.attributes.Text === father.data?.attributes.Text 
                         }
                         )
-                        return name.attributes.user.data.attributes.UserName;
+                        return name.attributes.user.data.attributes.real_user_name;
                     }
                     return (
                         <li className={father.data === null ? "" : "post-children"} id={`comment-id-${commentId}`} key={commentId}>
@@ -82,7 +82,7 @@ const Comments = ({ data, sendMessage }) => {
                                     <header className="comment__header">
                                         <span className="post-byline">
                                             <span className="author publisher-anchor-color">
-                                                {UserName} 
+                                                {real_user_name} 
                                                 {father.data !==null?<span style={{color: "#494e58",fontSize: 12}} className="parent-link-container">
                                                 <img style={{margin: "0 12px 0 10px"}} width={15}  src="https://cdn-icons-png.flaticon.com/512/591/591866.png" alt="" />
                                                 {findFatherName()}
@@ -110,7 +110,7 @@ const Comments = ({ data, sendMessage }) => {
                                     <footer className="comment__footer">
                                         <menu className="comment-footer__menu">
                                             <button className="comment-footer__action" onClick={() => toggleReplyArea(commentId)}>
-                                                <span className="text">{$t[locale].comment.reply}</span>
+                                                <span className="text reply-button">{$t[locale].comment.reply}</span>
                                             </button>
                                         </menu>
                                     </footer>

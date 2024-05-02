@@ -26,7 +26,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
                     </div>
                     <div className='d-flex justify-content-between'>
                     <button className="btn btn-success" data-dismiss="modal" onClick={onSubmit} style={{width: '48%'}}>OK</button>
-                    <button className="btn btn-danger" data-dismiss="modal" onClick={onClose} style={{width: '48%', background: "red !important"}}>Cancel</button>
+                    <button className="btn-danger" data-dismiss="modal" onClick={onClose} style={{width: '48%'}}>Cancel</button>
                     </div>
                 </div>
             </div>

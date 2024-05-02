@@ -21,7 +21,6 @@ const incrementViews = async (
     const { id } = req.body;
 
     try {
-      // Отримайте поточну кількість переглядів
       const getPage = await server.get(`/blogs/${id}`);
       const pageViews= getPage.data.data.attributes.views
       await server.put(

@@ -363,3 +363,30 @@
 .post-children{
     padding-left: 40px;
 }
+
+
+.heading_title{
+    color: #f8f32b !important;
+    font-size: 25px !important;
+    
+}
+.page_heading_page{
+    display: inline-block;
+    color: #fff !important;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(15px);
+    padding: 6px 8px;
+    font-size: 13px !important;
+    border-radius: 60px;
+    font-family: 'Roboto', Arial, sans-serif;
+    line-height: 1.44;
+    text-align: center;
+    white-space: nowrap;
+    
+}
+.reply-button{
+    color: #ffb300
+}
+.heading_name {
+    margin-left: 8px; /* Adjust this value as needed for the desired space */
+  }
