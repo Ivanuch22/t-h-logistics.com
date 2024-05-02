@@ -119,8 +119,7 @@ const Page = ({
     setUserComments(comments)
   },[])
   const { publicRuntimeConfig } = getConfig();
-const { NEXT_FRONT_URL } = publicRuntimeConfig;
-
+const { NEXT_FRONT_URL,MAILER_URL } = publicRuntimeConfig;
 
   const router = useRouter();
   const locale = router.locale === 'ua' ? 'uk' : router.locale;
@@ -282,7 +281,7 @@ incrementPageViews(pageRes[0].id)
             const newFunc = async ()=>{
               const fatherComment = await server.get(`/comments1/${fatherId}?populate=*`);
               if(fatherComment.data.data.attributes.user.data.attributes.sendMessage){
-                const response = await axios.post('http://localhost:8888/api/comment-message', {
+                const response = await axios.post(`${MAILER_URL}/api/comment-message`, {
                   email: fatherComment.data.data.attributes.user.data.attributes.email,
                   locale: fatherComment.data.data.attributes.locale,
                   userName: fatherComment.data.data.attributes.user.data.attributes.UserName,

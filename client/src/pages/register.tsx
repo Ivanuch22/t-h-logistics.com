@@ -20,6 +20,7 @@ import Cookies from 'js-cookie';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWindowSize } from '@uidotdev/usehooks';
 import MailModal from '@/components/organisms/ModalMail';
+import getConfig from 'next/config';
 
 export default function Home({
   menu,
@@ -32,6 +33,8 @@ export default function Home({
   const {login,updateUser } = useAuth();
   const locale = router.locale === 'ua' ? 'uk' : router.locale;
   const size = useWindowSize();
+  const { publicRuntimeConfig } = getConfig();
+  const { MAILER_URL } = publicRuntimeConfig;
 
   const [cIndex, setCIndex] = useState(getRandomElementFromArray(captchas));
   const [isError, setIsError] = useState(false);
@@ -175,7 +178,7 @@ export default function Home({
       if (response.status === 200) {
         handleSuccess();
         login();
-        await axios.post('http://localhost:8888/api/forgot/', {
+        await axios.post(`${MAILER_URL}/api/forgot/`, {
           email: email,
           locale: locale,
         });
