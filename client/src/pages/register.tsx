@@ -178,7 +178,7 @@ export default function Home({
       if (response.status === 200) {
         handleSuccess();
         login();
-        await axios.post(`${MAILER_URL}/api/forgot/`, {
+        await axios.post(`${NEXT_MAILER}/api/forgot/`, {
           email: email,
           locale: locale,
         });
