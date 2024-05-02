@@ -10,7 +10,6 @@
     "strapi": "strapi",
     "prod": "pm2 start npm --name strapi -- start"
   },
-  "devDependencies": {},
   "dependencies": {
     "@_sh/strapi-plugin-ckeditor": "^2.0.4",
     "@strapi/plugin-i18n": "4.10.1",
