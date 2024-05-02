@@ -499,15 +499,13 @@ export async function getServerSideProps({
   const strapiMenu = await server.get(getMenu('main'));
 
   let comments = [];
-  if (pageRes.data?.data[0]?.id) {
-    const blogId = pageRes.data.data[0].id;
-    const commentsRes = await server.get(`/comments1?filters[blog][id]=${blogId}&populate=*`);
-    console.log(commentsRes.data.data)
+  console.log(pageRes.data.data)
+    const blogUrl = pageRes.data.data[0].attributes.url;
+    const commentsRes = await server.get(`/comments1?filters[blog][url]=${blogUrl}&populate=*`);
 
     // Filter comments by admin_date
     comments = commentsRes.data.data.filter(comment => comment.attributes.admin_date);
 
-  }
 
   const strapiLocale = locale === 'ua' ? 'uk' : locale;
   const { menu, allPages, footerMenus, footerGeneral } =
