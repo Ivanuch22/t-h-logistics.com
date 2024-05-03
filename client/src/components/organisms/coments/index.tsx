@@ -2,8 +2,14 @@
 import React, { useState, useEffect } from "react";
 import formatDateTime from "@/utils/formateDateTime";
 import TextArea from "./textArea";
+import { Roboto } from 'next/font/google'
 import $t from '@/locale/global';
 import { useRouter } from "next/router";
+
+const roboto = Roboto({
+    weight: '400',
+    subsets: ['latin'],
+  })
 
 const Comments = ({ data, sendMessage }) => {
     const [comments, setComments] = useState([]);
@@ -106,7 +112,7 @@ const Comments = ({ data, sendMessage }) => {
       // Check if the word contains "http://" or "https://"
       if (word.startsWith("http://") || word.startsWith("https://")) {
         return (
-          <a key={index} href={word} rel="nofollow" target="_blank">
+          <a className="postLink" key={index} href={word} rel="nofollow noopener noreferrer nofollow" target="_blank">
             {word}
           </a>
         );

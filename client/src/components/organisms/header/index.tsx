@@ -90,19 +90,19 @@ useEffect(()=>{
           <>
             <button
                 type="button"
-                className="btn text-secondary search-btn navpart"
+                className=" btn text-secondary search-btn navpart"
                 onClick={() => setShowModal(!showModal)}
             >
               <i className="fa fa-search navpart"></i>
             </button>
             {isLogin ? <Link
                 href="/profile"
-                className="btn text-secondary search-btn navpart"
+                className=" btn text-secondary search-btn navpart"
             >
               {showProfile}
             </Link> : <Link
                 href="/login"
-                className="btn text-secondary search-btn navpart"
+                className=" btn text-secondary search-btn navpart"
             >
               {$t[locale].auth.header_button_name}
             </Link>}
@@ -114,19 +114,19 @@ useEffect(()=>{
               <>
                 <button
                     type="button"
-                    className="btn text-secondary search-btn navpart"
+                    className="header_left_button btn text-secondary search-btn navpart"
                     onClick={() => setShowModal(!showModal)}
                 >
                   <i className="fa fa-search navpart"></i>
                 </button>
                 {isLogin ? <Link
                     href="/profile"
-                    className="btn text-secondary search-btn navpart"
+                    className="header_rigth_button btn text-secondary search-btn navpart"
                 >
                   {showProfile}
                 </Link> : <Link
                     href="/login"
-                    className="btn text-secondary search-btn navpart"
+                    className="header_rigth_button btn text-secondary search-btn navpart"
                 >
                   {$t[locale].auth.header_button_name}
                 </Link>}

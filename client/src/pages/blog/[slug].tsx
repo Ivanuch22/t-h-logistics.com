@@ -469,7 +469,7 @@ const Page = ({
                         </div>
                       )}
                       <div className="row">
-                        <div className='row gap-2 align-items-center mb-2 ps-4'>
+                        <div className='row gap-sm-2 align-items-center mb-2 ps-4'>
                           <Link className='text-capitalize fw-bold w-auto part  page_heading_page ' href={`/blog?heading=${heading.data?.attributes.Name}`}>{heading.data?.attributes.Name}</Link>
                           <div className='w-auto part'>{formatDateTime(admin_date)}</div>
                           <div className="w-auto comments part" >

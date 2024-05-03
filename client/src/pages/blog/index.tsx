@@ -127,14 +127,14 @@ export default function Home({
 
               <div className=" p-3">
                 <div className="row">
-                  <div className='ps-5 col article-col gap-5 pe-md-2 d-flex flex-column'>
+                  <div className='ps-md-5 col article-col gap-5 pe-md-2 d-flex flex-column'>
                     {pages.map((page, index) => {
                       const { page_title, admin_date, url, heading, comments, views } = page.attributes;
                       const imageUrl = (page.attributes.image.data) ? page.attributes.image.data.attributes.url : "";
 
                       return (
                         <div className="row row-line" key={index}>
-                          <div className="col-sm-3 col-img mb-3 mb-sm-0">
+                          <div className="col-sm-3 col-img mb-3 mb-sm-0 blog_img_block">
                             <div className="col-img-in">
                               <Link
                                 href={`${sanitizeImageUrl(url)}`}
@@ -143,14 +143,14 @@ export default function Home({
                               />
                             </div>
                           </div>
-                          <div className="col-sm-8 col-txt d-flex flex-column justify-content-between ">
+                          <div className="col-sm-8 col-txt d-flex flex-column justify-content-between blog_text_block  ">
                             <h2 className="entry-title text-uppercase">
                               <Link className="entry-title text-uppercase h4" href={url}>{page_title}</Link>
                             </h2>
                             <div className="hidden-sm hidden-xs pb-2">
                               <div className="entry-header" style={{ clear: "both" }}>
                                 <div className="align-items-center d-flex gap-3">
-                                  <span className="category-color" style={{ paddingRight: 10, color: "#933758" }}>
+                                  <span className="category-color" style={{ color: "#933758" }}>
                                     <Link href={`/blog?heading=${heading.data?.attributes.Name}`} className="text-info text-capitalize fw-bold a-not-img">
                                       {heading.data?.attributes.Name}
                                     </Link>

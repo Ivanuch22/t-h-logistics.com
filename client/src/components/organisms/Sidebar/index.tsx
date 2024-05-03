@@ -17,7 +17,7 @@ export default function Sidebar({ randomBanner, children }: SidebarProps) {
       {/* displaying randomBanner */}
       <div className="sidebar-section sidebar-section--banner">
         <a href={randomBanner?.url} target="_blank">
-          <Image
+          <img
             className="sidebar-banner"
             src={randomBanner?.image}
             width={300}
