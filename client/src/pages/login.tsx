@@ -29,7 +29,7 @@ export default function Home({
   const [message, setMessage] = useState('');
   const [isError, setIsError] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const { isLogin, logout, login } = useAuth();
+  const { isLogin, logout,updateUser, login } = useAuth();
   const size = useWindowSize();
 
   const router = useRouter();
@@ -125,6 +125,7 @@ export default function Home({
       Cookies.set('user', JSON.stringify(response.data.user), { expires: 7 });
 
       login();
+      updateUser()
       handleSuccess();
       router.push('/');
     } catch (error) {

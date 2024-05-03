@@ -129,7 +129,8 @@ const Page = ({
 
   useEffect(() => {
     setUserComments(comments)
-  }, [])
+  }, [comments])
+  
 //зміна кількості пергляду сторінки
   useEffect(() => {
     const incrementPageViews = async (pageId) => {
