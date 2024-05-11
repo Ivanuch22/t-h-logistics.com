@@ -185,9 +185,10 @@ export default function Home({
         Cookies.set('userName', response.data.user.real_user_name, { expires: 7 });
         console.log("sdfha")
         updateUser()
+
         await axios.post(`/forgot/`, {
           email: email,
-          locale: locale,
+          locale: locale, 
         });
       } else {
         return handleError(error.response.data.error.message);
