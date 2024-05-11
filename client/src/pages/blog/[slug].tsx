@@ -100,6 +100,7 @@ const Page = ({
   url,
   faq,
   rating,
+  notFoundMessage,
   heading,
   extraLinks,
   code,
@@ -122,7 +123,7 @@ const Page = ({
   const [usersComments, setUserComments] = useState([]);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [errorCode, setErrorCode] = useState<number | null>(null);
-
+  const [isShowNotFoutMessage, setIsShowNotFoutMessage] = useState(false)
   const { NEXT_FRONT_URL, NEXT_MAILER } = publicRuntimeConfig;
   const router = useRouter();
   const locale = router.locale === 'ua' ? 'uk' : router.locale;
@@ -130,28 +131,33 @@ const Page = ({
   useEffect(() => {
     setUserComments(comments)
   }, [comments])
-  
-  useEffect(() => {
-    const incrementPageViews = async (pageId) => {
-      const viewedPages = (Cookies.get('viewedPages') || '').split(',');
-      if (viewedPages.includes("" + pageId)) {
-        console.log('Already viewed this page');
-        return;
-      }
-      try {
-        await axios.post('/api/increment-views', { id: pageId });
-        viewedPages.push(pageId);
-        Cookies.set('viewedPages', viewedPages.join(','), {
-          expires: 1, 
-          sameSite: 'strict',
-          secure: true,
-        });
-      } catch (error) {
-        console.error('Error incrementing page views:', error);
-      }
-    };
-    incrementPageViews(pageRes[0].id)
-  }, [pageRes[0].id]);
+  if(pageRes){
+    useEffect(() => {
+      setIsShowNotFoutMessage(notFoundMessage)
+      const incrementPageViews = async (pageId) => {
+        const viewedPages = (Cookies.get('viewedPages') || '').split(',');
+        if (viewedPages.includes("" + pageId)) {
+          console.log('Already viewed this page');
+          return;
+        }
+        try {
+          await axios.post('/api/increment-views', { id: pageId });
+          viewedPages.push(pageId);
+          Cookies.set('viewedPages', viewedPages.join(','), {
+            expires: 1, 
+            sameSite: 'strict',
+            secure: true,
+          });
+        } catch (error) {
+          console.error('Error incrementing page views:', error);
+        }
+      };
+      console.log(pageRes)
+      incrementPageViews(pageRes[0].id)
+    }, [pageRes[0]?.id]);
+  }
+
+
 
   // Эта функция рекурсивно пробегаем по объекту навигации который мы возвращаем из функции getServerSideProps
   // и генерирует одномерный мессив объектов который будет в последующем преобразован в компонент breadcrumbs
@@ -437,6 +443,24 @@ const Page = ({
                   </div>
                 </div>
               </div>
+              {errorMessage && (
+                        <div className="error-message">
+                          <h3>
+                            {errorCode != null
+                              ? `${
+                                  errorText[
+                                    Object.keys(message404).find(
+                                      key => message404[key] === errorMessage
+                                    )
+                                  ]
+                                } ${errorCode}`
+                              : errorMessage}
+                          </h3>
+                          {errorCode != null && (
+                            <p className="error-descr">{errorMessage}</p>
+                          )}
+                        </div>
+                      )}
 
               <div className="container-xxl">
                 <div className="row smallPaddign">
@@ -451,17 +475,10 @@ const Page = ({
                       style={{ maxWidth: '90%', margin: '0 auto' }}
                     >
 
-                      {errorMessage && (
+                      {notFoundMessage && (
                         <div className="error-message">
                           <h3>
-                            {errorCode != null
-                              ? `${errorText[
-                              Object.keys(message404).find(
-                                key => message404[key] === errorMessage
-                              )
-                              ]
-                              } ${errorCode}`
-                              : errorMessage}
+                            {$t[locale].blog.pageNotFoud}
                           </h3>
                           {errorCode != null && (
                             <p className="error-descr">{errorMessage}</p>
@@ -510,10 +527,15 @@ export async function getServerSideProps({
 }: Query) {
   const slug = `/blog/${query?.slug}` || '';
   const Locale = locale === 'ua' ? 'uk' : locale;
-
+  let notFoundMessage = false
   const randomBanner = await getRandomBanner(Locale);
-  const mostPopular = await getRandomPopularNews(Locale);
+  let mostPopular = await getRandomPopularNews(Locale);
+  console.log(mostPopular,"slfaj")
+  
 
+  if(mostPopular.length===0){
+    mostPopular = await getRandomPopularNews("ru");
+  }
   let headings;
   let comments = [];
   let pageIds
@@ -526,7 +548,11 @@ export async function getServerSideProps({
     headings = [];
   }
 
-  const pageRes = await server.get(getBlogPage(slug, $(Locale)));
+  let pageRes = await server.get(getBlogPage(slug, $(Locale)));
+  if(pageRes.data.data.length===0){
+    notFoundMessage = true
+    pageRes = await server.get(getBlogPage(slug, "ru"));
+  }
   const strapiMenu = await server.get(getMenu('main'));
 
   const { menu, allPages, footerMenus, footerGeneral } =await getHeaderFooterMenus(Locale);
@@ -582,6 +608,7 @@ export async function getServerSideProps({
         pageRes: pageRes.data.data,
         body: replacedImagesSrcBody,
         crumbs,
+        notFoundMessage,
         slug,
         keywords,
         comments,
@@ -625,6 +652,7 @@ export async function getServerSideProps({
       article: null,
       faq: [],
       extraLinks: [],
+      notFoundMessage,
       code: [],
       howto: null,
       randomBanner,

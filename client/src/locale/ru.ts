@@ -247,7 +247,8 @@ export default {
   blog:{
     title: "Блог",
     mostpopular:"Блог, самое популярное",
-    all: 'Все подряд'
+    all: 'Все подряд',
+    pageNotFoud: "На сайте нет русской версии этой страницы"
   },
   comment: {
     comments: "комментариев",

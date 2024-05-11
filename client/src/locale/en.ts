@@ -247,7 +247,8 @@ export default {
   blog:{
     title: "Blog",
     mostpopular:"Blog, most popular",
-    all: 'All heading'
+    all: 'All heading',
+    pageNotFoud: "There is no English version of this page on the site"
 
   },
   comment: {
