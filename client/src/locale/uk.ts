@@ -247,7 +247,8 @@ export default {
   blog:{
     title: "Блог",
     mostpopular:"Блог, найпопулярніші",
-    all: 'Все підряд'
+    all: 'Все підряд',
+    pageNotFoud: "На сайті немає української версії цієї сторінки"
   },
   comment: {
     comments: "коментарів",

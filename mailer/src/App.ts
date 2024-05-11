@@ -275,7 +275,7 @@ Trans-Hope
                 return res.status(500).json({ error });
             }
         })
-        this.APP.post('/comment-message', async (req, res) => {
+        this.APP.post('/message', async (req, res) => {
             try {
                 const {
                     email,
