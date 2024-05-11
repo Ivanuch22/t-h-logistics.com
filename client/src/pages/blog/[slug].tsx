@@ -291,7 +291,7 @@ const Page = ({
           const newFunc = async () => {
             const fatherComment = await server.get(`/comments1/${fatherId}?populate=*`);
             if (fatherComment.data.data.attributes.user.data.attributes.sendMessage) {
-              const response = await axios.post(`/comment-message`, {
+              const response = await axios.post(`/api/comment-message`, {
                 email: fatherComment.data.data.attributes.user.data.attributes.email,
                 locale: fatherComment.data.data.attributes.locale,
                 userName: fatherComment.data.data.attributes.user.data.attributes.real_user_name,
