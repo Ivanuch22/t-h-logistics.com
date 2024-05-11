@@ -58,7 +58,7 @@ const Footer = () => {
   const { footerMenus, footerGeneral } = useDefaultLayoutContext();
 
   return (
-    <div
+    <footer
       className="container-fluid bg-primary text-white footer mt-5 pt-5 wow fadeIn"
       data-wow-delay="0.1s"
     >
@@ -204,7 +204,7 @@ const Footer = () => {
           </div>
         </div>
       </div>
-    </div>
+    </footer>
   );
 };
 

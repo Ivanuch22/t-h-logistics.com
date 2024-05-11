@@ -61,6 +61,7 @@ useEffect(()=>{
   }
 },[isLogin,userData])
   return (
+    <header>
     <nav className="navbar navbar-expand-xl navbar-light ">
       <Link href="/" className="navbar-brand p-0">
         <h1 className="m-0">
@@ -138,6 +139,8 @@ useEffect(()=>{
 
 
     </nav>
+    </header>
+
   );
 };
 

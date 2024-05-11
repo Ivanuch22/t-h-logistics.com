@@ -131,7 +131,6 @@ const Page = ({
     setUserComments(comments)
   }, [comments])
   
-//зміна кількості пергляду сторінки
   useEffect(() => {
     const incrementPageViews = async (pageId) => {
       const viewedPages = (Cookies.get('viewedPages') || '').split(',');
@@ -440,14 +439,14 @@ const Page = ({
               </div>
 
               <div className="container-xxl">
-                <div className="row">
+                <div className="row smallPaddign">
                   <div className="col article-col pe-md-2">
                     {/* 
               В этом блоке будут помещены и отрендерены все данные из body. Body - это поле в страпи в коллекции Page.
               там вы можете вписывать как обычный текст так и html код
              */}
 
-                    <div
+                    <main
                       className="cont-body"
                       style={{ maxWidth: '90%', margin: '0 auto' }}
                     >
@@ -486,12 +485,12 @@ const Page = ({
                       </div>
                       <div dangerouslySetInnerHTML={{ __html: body }}></div>
                       <Comments data={usersComments} sendMessage={sendMessage} />
-                    </div>
+                    </main>
                   </div>
-                  <div className=' col-md-auto  mx-360'>
+                  <aside className=' col-md-auto pe-md-3 col-sm-12 d-flex flex-wrap flex-column flex-sm-row align-items-center align-items-sm-start justify-content-sm-start justify-content-md-start flex-md-column col-md-auto  mx-360'>
                     <Sidebar randomBanner={randomBanner}></Sidebar>
                     <MostPopular title={$t[locale].blog.mostpopular} data={mostPopular} />
-                  </div>
+                  </aside>
                 </div>
               </div>
             </DefaultLayout>
@@ -561,6 +560,7 @@ export async function getServerSideProps({
       howto,
     }: PageAttibutes = pageRes.data?.data[0]?.attributes;
     await getPagesIdWithSameUrl(url).then(data => pageIds = data)
+
     const getBlogComments = await server.get(`/comments1?filters[blog][url]=${url}&populate=*&sort[0]=admin_date`);
     comments = getBlogComments.data.data.filter(comment => comment.attributes.admin_date);
 

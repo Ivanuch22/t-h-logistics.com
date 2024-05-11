@@ -268,7 +268,7 @@ export default function Profile({
         defer
       ></Script>
       <div className="container-xxl bg-white p-0">
-        <div className="container-xxl position-relative p-0">
+        <main className="container-xxl position-relative p-0">
           <DefaultLayoutContext.Provider
             value={{
               footerMenus,
@@ -632,7 +632,7 @@ export default function Profile({
               <ImgEditor onClose={()=>{setAvatarModalVisible(false)}} isShow = {avatarModalVisible} handleUpload={handleUpload}/>
             </DefaultLayout>
           </DefaultLayoutContext.Provider>
-        </div>
+        </main>
       </div>
     </>
   );

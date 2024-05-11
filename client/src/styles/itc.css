@@ -507,7 +507,7 @@
     }
     .sidebar-section {
         margin-bottom: 1.5em;
-        min-width: 280px;
+        min-width: 270px;
         max-width: 300px;
     }
     .article-col {
@@ -515,6 +515,24 @@
     }
 
 }
+@media (max-width: 672px) {
+    .mx-360{
+        margin: 0 auto;
+        max-width: 400px;
+
+    }
+    .sidebar-section.sidebar-section--banner{
+        margin: 0 auto !important;
+        max-width: 90%;
+        padding-top: 30px !important;
+
+    }
+    .smallPaddign{
+        width: 100%;
+        margin: 0 auto;
+    }
+}
+
 @media (max-width: 542px) {
     .article-col{
         min-width: auto;

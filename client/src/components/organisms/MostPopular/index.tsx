@@ -18,7 +18,7 @@ const truncateWithEllipsis = (text:string, maxLength = 60) => {
 
 const MostPopular = ({ data, title }: MostPopular) => {
     return (
-        <div className='mostpopular mt-3'>
+        <article className='mostpopular mt-3'>
             <h3 className="mostpopular__title mb-3">{title}</h3>
             {data.map(page => {
                 const { page_title, image, admin_date, url,comments } = page.attributes;
@@ -45,7 +45,7 @@ const MostPopular = ({ data, title }: MostPopular) => {
                 )
             }
             )}
-        </div>
+        </article>
     )
     return
 }
