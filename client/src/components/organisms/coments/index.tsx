@@ -2,14 +2,10 @@
 import React, { useState, useEffect } from "react";
 import formatDateTime from "@/utils/formateDateTime";
 import TextArea from "./textArea";
-import { Roboto } from 'next/font/google'
+
 import $t from '@/locale/global';
 import { useRouter } from "next/router";
 
-const roboto = Roboto({
-    weight: '400',
-    subsets: ['latin'],
-  })
 
 const Comments = ({ data, sendMessage }) => {
     const [comments, setComments] = useState([]);
@@ -33,12 +29,18 @@ const Comments = ({ data, sendMessage }) => {
 
                 if (fatherId === undefined) {
                     newArr.push(comment);
-                } else {
-                    const fatherIndex = newArr.findIndex(c => c.id === fatherId);
+                } 
+            });
+            const reversednewArr = newArr.reverse();
+            data.forEach(comment => {
+                const fatherId = comment.attributes.father.data?.id;
+
+                if (fatherId !== undefined) {
+                    const fatherIndex = reversednewArr.findIndex(c => c.id === fatherId);
                     if (fatherIndex !== -1) {
-                        newArr.splice(fatherIndex + 1, 0, comment);
+                        reversednewArr.splice(fatherIndex + 1, 0, comment);
                     }
-                }
+                } 
             });
             return newArr;
         }

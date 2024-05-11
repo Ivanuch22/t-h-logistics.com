@@ -77,7 +77,7 @@ export default function Home({
             }}
           >
             <DefaultLayout>
-              <div className="container-xxl position-relative p-0">
+              <main className="container-xxl position-relative p-0">
                 <div className="container-xxl py-5 bg-primary hero-header mb-5">
                   <div className="container mb-5 mt-5 py-2 px-lg-5 mt-md-1 mt-sm-1 mt-xs-0 mt-lg-5">
                     <div className="row g-5 pt-1">
@@ -123,17 +123,17 @@ export default function Home({
                     </div>
                   </div>
                 </div>
-              </div>
+              </main>
 
               <div className=" p-3">
                 <div className="row">
-                  <div className='ps-md-5 col article-col gap-5 pe-md-2 d-flex flex-column'>
+                  <div className='ps-lg-5 col article-col gap-5 pe-md-2 d-flex flex-column'>
                     {pages.map((page, index) => {
                       const { page_title, admin_date, url, heading, comments, views } = page.attributes;
                       const imageUrl = (page.attributes.image.data) ? page.attributes.image.data.attributes.url : "";
 
                       return (
-                        <div className="row row-line" key={index}>
+                        <section className="row row-line" key={index}>
                           <div className="col-sm-3 col-img mb-3 mb-sm-0 blog_img_block">
                             <div className="col-img-in">
                               <Link
@@ -172,18 +172,18 @@ export default function Home({
                               </div>
                             </div>
                           </div>
-                        </div>
+                        </section>
                       );
                     })}
 
                   </div>
-                  <div className=' col-md-auto  mx-360'>
+                  <aside className=' col-md-auto  mx-360'>
                     <Sidebar randomBanner={randomBanner}></Sidebar>
                     <MostPopular title={$t[locale].blog.mostpopular} data={mostPopular} />
-                  </div>
+                  </aside>
                 </div>
               </div>
-              <div className="d-flex mt-5 justify-content-center">
+              <article className="d-flex mt-5 justify-content-center">
                 {2 && (
                   <PaginationControl
                     page={paginationPage}
@@ -197,7 +197,7 @@ export default function Home({
                     ellipsis={1}
                   />
                 )}
-              </div>
+              </article>
             </DefaultLayout>
           </DefaultLayoutContext.Provider>
         </div>
