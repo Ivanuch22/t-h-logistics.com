@@ -247,7 +247,7 @@ Trans-Hope
                 return res.status(500).json({ error });
             }
         })
-        this.APP.post('/api/forgot', async (req, res) => {
+        this.APP.post('/forgot', async (req, res) => {
             try {
                 const {
                     email,
@@ -275,7 +275,7 @@ Trans-Hope
                 return res.status(500).json({ error });
             }
         })
-        this.APP.post('/api/comment-message', async (req, res) => {
+        this.APP.post('/comment-message', async (req, res) => {
             try {
                 const {
                     email,

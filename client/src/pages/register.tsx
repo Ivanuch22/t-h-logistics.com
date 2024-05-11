@@ -185,7 +185,7 @@ export default function Home({
         Cookies.set('userName', response.data.user.real_user_name, { expires: 7 });
         console.log("sdfha")
         updateUser()
-        await axios.post(`${NEXT_MAILER}/api/forgot/`, {
+        await axios.post(`/forgot/`, {
           email: email,
           locale: locale,
         });
