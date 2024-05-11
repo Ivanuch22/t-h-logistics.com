@@ -100,7 +100,7 @@ function SiteMap() {
 
 export async function getServerSideProps({ res }) {
   // fetching all urls to put it into sitemap
-  async function fetchUrls(apiRoute: 'pages' | 'page-seos' | 'accordions') {
+  async function fetchUrls(apiRoute: 'pages' | 'page-seos' | 'accordions' | "blogs") {
     let array = [];
     let isFetching: boolean = true;
     let currentPage: number = 1;
@@ -143,8 +143,9 @@ export async function getServerSideProps({ res }) {
     const tags = await fetchUrls('page-seos');
 
     const accordions = await fetchUrls('accordions');
+    const blogs = await fetchUrls('blogs');
 
-    const sitemap = generateSiteMap(posts, tags, accordions);
+    const sitemap = generateSiteMap(posts, tags, accordions,blogs);
 
     res.setHeader('Content-Type', 'text/xml');
     res.write(sitemap);
