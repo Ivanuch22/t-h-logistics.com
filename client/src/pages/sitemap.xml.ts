@@ -10,7 +10,7 @@ import removeFirstSlash from '@/utils/removeFirstSlash';
 
 import qs from 'qs';
 
-function generateSiteMap(posts, tags, accordions) {
+function generateSiteMap(posts, tags, accordions, blogs) {
   return `<?xml version="1.0" encoding="UTF-8"?>
    <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
      <url>
@@ -90,6 +90,19 @@ function generateSiteMap(posts, tags, accordions) {
     `;
       })
       .join('')}
+
+      ${blogs
+        .map(page => {
+          return `
+        <url>
+            <loc>${NEXT_FRONT_URL}/${getReadableLocale(
+            page.attributes.locale
+          )}${removeFirstSlash(page.attributes.url, page.attributes.locale)}</loc>
+            <priority>0.8</priority>
+        </url>
+      `;
+        })
+        .join('')}
    </urlset>
  `;
 }
