@@ -138,7 +138,7 @@ export default function Home({
                             <div className="col-img-in">
                               <Link
                                 href={`${sanitizeImageUrl(url)}`}
-                                className="thumb-responsive lazy-load a-not-img lazy-loaded"
+                                className="thumb-responsive lazy-load a-not-img lazy-loaded mostpopularImgBlock"
                                 style={{ backgroundImage: `url(${sanitizeImageUrl(NEXT_STRAPI_BASED_URL + imageUrl)})` }}
                               />
                             </div>
@@ -158,16 +158,17 @@ export default function Home({
                                   <span className="date part">
                                     {formatDateTime(admin_date, false)}
                                   </span>
-                                  <div className='view part'>
-                                    <div className='w-auto align-items-center d-flex'><img className='me-1' src="https://itc.ua/wp-content/themes/ITC_6.0/images/eye2.png" height="11" width="17" alt="views icon"></img>{views}</div>
-
-                                  </div>
                                   <span className="comments part" >
                                     <Link href={`${url}#comment`} className="align-items-center d-flex">
                                       <img src="https://itc.ua/wp-content/themes/ITC_6.0/images/comment_outline_24.svg" height="24" width="24" alt="comment" />
                                       <span className="disqus-comment-count" data-disqus-url="https://itc.ua/ua/novini/sylovu-bronyu-v-seriali-fallout-zrobyly-bez-vtruchannya-bethesda-a-ot-na-robochomu-pip-boy-v-kompaniyi-napolyagaly/" data-disqus-identifier="2259249 https://itc.ua/?p=2259249">{comments.data.length}</span>
                                     </Link>
                                   </span>
+                                  <div className='view part'>
+                                    <div className='w-auto align-items-center d-flex'><img className='me-1' src="https://itc.ua/wp-content/themes/ITC_6.0/images/eye2.png" height="11" width="17" alt="views icon"></img>{views}</div>
+
+                                  </div>
+                                  
                                 </div>
                               </div>
                             </div>

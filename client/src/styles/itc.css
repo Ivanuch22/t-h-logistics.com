@@ -85,12 +85,21 @@
     background-position: 50% 50%;
     margin-right: 10px;
 }
+.mostpopularImgBlock{
+    display: block;
+    height: 0;
+    padding-bottom: 60%;
+    background-color: #eee;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: 50% 50%;
+    margin-right: 10px;
+}
 
 .mostpopular__text-title {
     font-size: 14px;
     margin-bottom: 5px;
     font-weight: 700 !important;
-
 }
 
 .mx-360 {
