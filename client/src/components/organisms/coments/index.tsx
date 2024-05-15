@@ -67,9 +67,10 @@ const Comments = ({ data, sendMessage }) => {
 
             <ul className="p-0">
                 {comments.map(comment => {
+                    console.log(comments)
                     const commentId = comment.id;
                     const { Text, admin_date, father, children, user } = comment.attributes;
-                    const { imgLink, real_user_name } = user.data.attributes;
+                    const { imgLink, real_user_name } = user?.data?.attributes;
                     const findFatherName = ()=>{
                         const name = comments.find(element=>{
                             return element.attributes.Text === father.data?.attributes.Text 

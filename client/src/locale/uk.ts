@@ -208,6 +208,7 @@ export default {
   },
   auth: {
     header_button_name: "Увійти",
+    notConfirmedMessage:"Ваш профіль НЕ активований. Для активації профілю перейдіть за посиланням, яке було вам надіслано під час реєстрації. Якщо ви не отримали посилання активації, запросіть повторний лист із посиланням активації.",
     send_message: "Надіслати",
     register:"Зареєструватися",
     forgot: "Забули",
@@ -216,6 +217,9 @@ export default {
     password: "Пароль",
     confirm_text: "Змінити данні?",
     name: "Ім'я",
+    getConfirmetionLink: "Отримати посилання активації",
+    activationBtnText: "Активувати",
+    successConfirmationMessage: "Нове посилання активації відправлено на ваш e-mail",
     error:{
       empty: "Заповніть дані коректно",
       empty_email: "Введіть Email",
@@ -234,6 +238,7 @@ export default {
       pass_message: "Пароль змінено"
     },
     profile:{
+      notConfirmed: "Ваш профіль НЕ активований",
       profile: "Профіль",
       change_pass: "Змінити пароль",
       change_profile: "Редагувати профіль",

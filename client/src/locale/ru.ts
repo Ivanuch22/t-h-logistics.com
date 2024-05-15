@@ -206,14 +206,18 @@ export default {
     page_title: 'Services',
   },
   auth: {
+    notConfirmedMessage: "Ваш профиль НЕ активирован. Для активации профиля перейдите по ссылке, которая была вам отправлена при регистрации. Если вы не получили ссылку активации, запросите повторное письмо, с ссылкой активации.",
     header_button_name: "Войти",
     send_message: "Отправить",
     register:"Зарегистрироваться",
     forgot: "Забыли",
     dont_have: "У вас нет аккаунта?",
     already_have: "Уже есть аккаунт?",
+    activationBtnText: "Активировать",
     password: "Пароль",
     confirm_text: "Изменить данные?",
+    getConfirmetionLink: " Получить ссылку активации ",
+    successConfirmationMessage: "Новая ссылка активации отправлена на ваш e-mail",
     name: "Имя",
     error:{
       empty: "Заполните данные правильно",
@@ -233,6 +237,7 @@ export default {
       pass_message: "Пароль изменен"
     },
     profile:{
+      notConfirmed: "Ваш профиль НЕ активирован",
       profile: "Профиль",
       change_pass: "Изменить пароль",
       change_profile: "Редактировать профиль",

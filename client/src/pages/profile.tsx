@@ -15,8 +15,10 @@ import 'react-tabs/style/react-tabs.css';
 import Link from 'next/link';
 import Cookies from 'js-cookie';
 import ConfirmModal from '@/components/organisms/ModalConfirm'
+import MailModal from '@/components/organisms/ModalMail';
 import ImgEditor from '@/components/organisms/ImgEditor';
 import getConfig from 'next/config';
+import NotConfirmedModal from '@/components/organisms/NotConfirmedModal';
 
 export default function Profile({
   menu,
@@ -41,12 +43,12 @@ export default function Profile({
   const router = useRouter();
   const locale = router.locale === 'ua' ? 'uk' : router.locale;
   const { isLogin, logout, updateUser } = useAuth();
-  const [defaultBirthday,setDefaultBirthday] = useState('2000-01-01')
+  const [defaultBirthday, setDefaultBirthday] = useState('2000-01-01')
   const [modalIsVisible, setModalVisible] = useState(false);
+  const [modalActivationIsVisible, setActivationModalVisible] = useState(false);
   const [avatarModalVisible, setAvatarModalVisible] = useState(false)
 
-
-
+  const [isShowMessageModal, setShowtMessageModal] = useState(false)
 
 
   useEffect(() => {
@@ -54,47 +56,46 @@ export default function Profile({
   }, [isLogin]);
   useEffect(() => {
     const getUserCookies = Cookies.get('user');
-    if(!getUserCookies)return
-    const userCookies =JSON.parse(getUserCookies)
-    setUser(userCookies); 
+    if (!getUserCookies) return
+    const userCookies = JSON.parse(getUserCookies)
+    let userFromBd = userCookies; 
+    async function getUser() {
+      const strapiRes = await server.get(`/users/${userCookies.id}`)
+      Cookies.set('user', JSON.stringify(strapiRes.data), { expires: 7 });
+      setUser(strapiRes.data)
+    }
 
-    if (userCookies.imgLink) {
-      setAvatarUrl(userCookies.imgLink);
-    }else{
+    getUser()
+    setUser(userFromBd);
+  
+    console.log(userFromBd)
+    if (userFromBd.imgLink) {
+      setAvatarUrl(userFromBd.imgLink);
+    } else {
       setAvatarUrl(noImgUrl)
     }
-    
-    if(userCookies.birthday){
-      setDefaultBirthday(userCookies.birthday)
+
+    if (userFromBd.birthday) {
+      setDefaultBirthday(userFromBd.birthday)
     }
   }, []);
-  useEffect(()=>{
-    const getUserCookies = Cookies.get('user');
-    if(!getUserCookies)return
 
-    const userCookies =JSON.parse(getUserCookies)
-    if(userCookies.birthday){
-      setDefaultBirthday(userCookies.birthday)
-    }
-    console.log(user)
-
-  },[user])
 
 
   async function updateStrapiData(userObj: object) {
-    console.log(userObj)
     const newObj = {
       imgLink: userObj.imgLink,
-      avatarId:userObj.avatarId,
-      birthday:userObj.birthday,
-      email:userObj.email,
-      real_user_name:userObj.real_user_name,
+      avatarId: userObj.avatarId,
+      birthday: userObj.birthday,
+      email: userObj.email,
+      real_user_name: userObj.real_user_name,
       sendMessage: userObj.sendMessage
     }
+
     try {
       const strapiRes = await server.put(`/users/${userObj.id}`, newObj, {
         headers: {
-          Authorization: `Bearer ${Cookies.get('userToken')}`, // Вставте токен аутентифікації Strapi сюди
+          Authorization: `Bearer ${Cookies.get('userToken')}`, 
         },
       });
       Cookies.set('user', JSON.stringify(strapiRes.data), { expires: 7 });
@@ -106,15 +107,19 @@ export default function Profile({
       return e;
     }
   }
-  async function changeData (e: FormEvent<HTMLFormElement>){
+  async function changeData(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!user.confirmed) {
+      return setShowtMessageModal(true)
+    }
+
     try {
       const resData = await updateStrapiData(user);
-      if(resData.status===200){
+      if (resData.status === 200) {
         setIsDisabled(true);
         handleSuccess();
         updateUser();
-      }else{
+      } else {
         handleError($t[locale].auth.error.invalid);
         console.log(e);
       }
@@ -127,11 +132,14 @@ export default function Profile({
   };
   async function changePass(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
+    if (!user.confirmed) {
+      return setShowtMessageModal(true)
+    }
     const formData = new FormData(event.currentTarget);
     const oldPass = formData.get('oldPass');
     const newPass = formData.get('newPass');
     const token = Cookies.get('userToken');
+    console.log("hello")
     try {
       const res = await server.post(
         '/auth/change-password',
@@ -160,10 +168,10 @@ export default function Profile({
       const response = await server.post(`/upload`, file, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${Cookies.get('userToken')}`, // Вставте токен аутентифікації Strapi сюди
+          Authorization: `Bearer ${Cookies.get('userToken')}`, 
         },
       });
-      // Assuming Strapi returns an array of files with a path property
+
       const uploadedFile = response.data[0];
       console.log(response.data);
       setAvatarUrl(`${NEXT_STRAPI_BASED_URL}${uploadedFile.url}`);
@@ -188,32 +196,15 @@ export default function Profile({
       setIsLoading(false);
     }
   }
-  async function handleDelete(){
-    try {
-      setIsLoading(true);
-      await server.delete(`upload/files/${user.avatarId}`, {
-        headers: {
-          Authorization: `Bearer ${Cookies.get('userToken')}`,
-        },
-      });
-      updateStrapiData({
-        ...user,
-        imgLink: null,
-        avatarId: null,
-      });
-      setUser({
-        ...user,
-        imgLink: null,
-        avatarId: null,
-      });
-      setAvatarUrl(`${NEXT_STRAPI_BASED_URL}/uploads/nophoto_c7c9abf542.png`);
-    } catch (error) {
-      console.error('Error deleting image: ', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  async function sendActivationMessage() {
+    const sendMessage = server.post("/auth/send-email-confirmation", {
+      email: user.email
+    })
+    setActivationModalVisible(true);
+    setTimeout(() => {
+      setActivationModalVisible(false);
+    }, 3000);
+  }
   function handleSuccess() {
     setIsSuccess(true);
     setTimeout(() => {
@@ -221,35 +212,21 @@ export default function Profile({
     }, 3000);
   }
   function handleError(message?: string) {
-    message?setMessage(message): setMessage($t[locale].auth.error.invalid_pass);
-    
+    message ? setMessage(message) : setMessage($t[locale].auth.error.invalid_pass);
+
     setIsError(true);
     setTimeout(() => {
       setIsError(false);
     }, 3000);
   }
   function onChange(obj: object) {
+    if (!user.confirmed) {
+      return setShowtMessageModal(true)
+    }
     setUser(obj);
     Cookies.set("user", JSON.stringify(obj))
     setIsDisabled(false);
   }
-  const handleDateChange = e => {
-  // Get the value from the input
-  const inputValue = e.target.value;
-
-  // Parse the date value into a JavaScript Date object
-  const date = new Date(inputValue);
-
-  if (!isNaN(date.getTime())) { // Check if the date is valid
-    // Format the date as yyyy-mm-dd
-    const formattedDate = date.toISOString().split('T')[0];
-
-    // Update the user's birthday
-    onChange({ ...user, birthday: formattedDate });
-  } else {
-    console.error("Invalid date format");
-  }
-};
 
 
 
@@ -299,7 +276,7 @@ export default function Profile({
                             </li>
                             <li className="breadcrumb-item">
                               <a className="text-white" href="#">
-                              {$t[locale].auth.profile.profile}
+                                {$t[locale].auth.profile.profile}
 
                               </a>
                             </li>
@@ -323,6 +300,21 @@ export default function Profile({
               >
                 {$t[locale].auth.success.change_message}
               </div>
+              <NotConfirmedModal
+                message={$t[locale].auth.notConfirmedMessage}
+                isVisible={isShowMessageModal}
+                sendMessage={sendActivationMessage}
+                onClose={() => {
+                  setShowtMessageModal(false)
+                }}
+              />
+              <MailModal
+                message={$t[locale].auth.successConfirmationMessage}
+                isVisible={modalActivationIsVisible}
+                onClose={() => {
+                  setActivationModalVisible(false)
+                }}
+              />
               <ConfirmModal
                 message={$t[locale].auth.confirm_text}
                 isVisible={modalIsVisible}
@@ -385,14 +377,14 @@ export default function Profile({
                         className="card-body position-relative  d-block d-md-flex align-items-center"
                       >
                         <div className="position-absolute p-2 top-0 start-0">
-                            <label
-                              type="button"
-                              onClick={()=>setAvatarModalVisible(true)}
-                              title="Додати фото"
-                              className="btn btn-success btn-sm px-1 py-0"
-                            >
-                              <i className="bi bi-upload"></i>
-                            </label>
+                          <label
+                            type="button"
+                            onClick={() => setAvatarModalVisible(true)}
+                            title="Додати фото"
+                            className="btn btn-success btn-sm px-1 py-0"
+                          >
+                            <i className="bi bi-upload"></i>
+                          </label>
                           {isLoading && (
                             <div
                               className="spinner-border text-primary"
@@ -415,18 +407,25 @@ export default function Profile({
                           </div>
 
                         </div>
+                        {!user.confirmed &&
+                          <div className='d-flex flex-column  justify-content-center gap-0'>
+                            <span className='text reply-button d-flex justify-content-center'>{$t[locale].auth.profile.notConfirmed}</span>
+                            <button onClick={sendActivationMessage} className='btn btn-primary m-2 d-inline-block'>{$t[locale].auth.activationBtnText}</button>
+                          </div>
+                        }
+
                         <button
-                            className="btn-danger btn ml-4"
-                            onClick={logout}
-                          >
-                            {$t[locale].auth.profile.exit}
-                          </button>
+                          className="btn-danger btn ml-4"
+                          onClick={logout}
+                        >
+                          {$t[locale].auth.profile.exit}
+                        </button>
                       </div>
                     </div>
                   </TabPanel>
                   <TabPanel>
                     <form
-                      onSubmit={(e)=>{
+                      onSubmit={(e) => {
                         e.preventDefault();
                         setModalVisible(true)
                       }}
@@ -435,13 +434,18 @@ export default function Profile({
                       <div className="card mb-4">
                         <div className="card-body position-relative">
                           <div className="position-absolute p-2 top-0 start-0">
-                              <label onClick={()=>setAvatarModalVisible(true)}
-                                type="button"
-                                title="Додати фото"
-                                className="btn btn-success btn-sm px-1 py-0"
-                              >
-                                <i className="bi bi-upload"></i>
-                              </label>
+                            <label onClick={() => {
+                              if (!user.confirmed) {
+                                return setShowtMessageModal(true)
+                              }
+                              setAvatarModalVisible(true)
+                            }}
+                              type="button"
+                              title="Додати фото"
+                              className="btn btn-success btn-sm px-1 py-0"
+                            >
+                              <i className="bi bi-upload"></i>
+                            </label>
                             {isLoading && (
                               <div
                                 className="spinner-border text-primary"
@@ -466,7 +470,7 @@ export default function Profile({
                         </div>
                       </div>
                       <label htmlFor="full_name" className="form-label">
-                      {$t[locale].auth.name}:
+                        {$t[locale].auth.name}:
                       </label>
                       <div className="row g-1 mb-3">
                         <div className="col-12">
@@ -516,13 +520,13 @@ export default function Profile({
                         <div className="col-12">
                           <div className="col-12 col-lg-9">
                             <label htmlFor="birthday" className="form-label">
-                            {$t[locale].auth.profile.birthday}:
+                              {$t[locale].auth.profile.birthday}:
                             </label>
                             <input
                               type="date"
                               name="birthday"
                               id="birthday"
-                              onChange={e =>{
+                              onChange={e => {
                                 onChange({ ...user, birthday: e.target.value })
                                 console.log(e.target.value)
                               }
@@ -582,7 +586,7 @@ export default function Profile({
                         <div className="col-12">
                           <div className="col-12 col-lg-9">
                             <label htmlFor="oldPass" className="form-label">
-                            {$t[locale].auth.profile.old_pass}
+                              {$t[locale].auth.profile.old_pass}
                             </label>
                             <input
                               id="oldPass"
@@ -598,7 +602,7 @@ export default function Profile({
                         <div className="col-12">
                           <div className="col-12 col-lg-9">
                             <label htmlFor="newPass" className="form-label">
-                            {$t[locale].auth.profile.new_pass}
+                              {$t[locale].auth.profile.new_pass}
                             </label>
                             <input
                               id="newPass"
@@ -612,7 +616,7 @@ export default function Profile({
                       </div>
                       <div className="mb-3 pt-4">
                         <button type="submit" className="btn btn-success">
-                        {$t[locale].auth.profile.change_pass}
+                          {$t[locale].auth.profile.change_pass}
                         </button>
                       </div>
                     </form>
@@ -626,10 +630,10 @@ export default function Profile({
                 style={login ? { display: 'none' } : { display: 'block' }}
               >
                 <Link className="btn btn-primary" href="/login">
-                {$t[locale].auth.header_button_name}
+                  {$t[locale].auth.header_button_name}
                 </Link>
               </div>
-              <ImgEditor onClose={()=>{setAvatarModalVisible(false)}} isShow = {avatarModalVisible} handleUpload={handleUpload}/>
+              <ImgEditor onClose={() => { setAvatarModalVisible(false) }} isShow={avatarModalVisible} handleUpload={handleUpload} />
             </DefaultLayout>
           </DefaultLayoutContext.Provider>
         </main>
@@ -642,13 +646,11 @@ export async function getServerSideProps({ query, locale }: Query) {
 
   try {
     const serverPages = await server.get(
-      `/pages?filters[$or][0][seo_title][$containsi]=${q}&filters[$or][1][seo_description][$containsi]=${q}&filters[$or][2][body][$containsi]=${q}&locale=${
-        locale === 'ua' ? 'uk' : locale
+      `/pages?filters[$or][0][seo_title][$containsi]=${q}&filters[$or][1][seo_description][$containsi]=${q}&filters[$or][2][body][$containsi]=${q}&locale=${locale === 'ua' ? 'uk' : locale
       }`
     );
     const serverSeoPages = await server.get(
-      `/page-seos?filters[$or][0][seo_title][$containsi]=${q}&filters[$or][1][seo_description][$containsi]=${q}&filters[$or][2][seo_description][$containsi]=${q}&locale=${
-        locale === 'ua' ? 'uk' : locale
+      `/page-seos?filters[$or][0][seo_title][$containsi]=${q}&filters[$or][1][seo_description][$containsi]=${q}&filters[$or][2][seo_description][$containsi]=${q}&locale=${locale === 'ua' ? 'uk' : locale
       }`
     );
     const pages = serverPages.data.data;

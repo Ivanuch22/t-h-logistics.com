@@ -206,6 +206,7 @@ export default {
     page_title: 'Services',
   },
   auth: {
+    notConfirmedMessage:"Your profile is NOT activated. To activate your profile, please follow the link that was sent to you on registration. If you did not receive the activation link, request a new email with the activation link.",
     header_button_name: "Sign in",
     send_message: "Send",
     register: "Register",
@@ -215,7 +216,9 @@ export default {
     password: "Password",
     name: "Name",
     confirm_text: "Change data?",
-
+    activationBtnText: "Activate",
+    getConfirmetionLink: "Get activation link",
+    successConfirmationMessage: "New activation link sent to your e-mail.",
     error: {
       empty: "Please fill in the data correctly",
       empty_email: "Enter your email",
@@ -234,6 +237,7 @@ export default {
       pass_message: "Password changed"
     },
     profile: {
+      notConfirmed: "Your profile is NOT activated.",
       profile: "Profile",
       change_pass: "Change password",
       change_profile: "Edit profile",

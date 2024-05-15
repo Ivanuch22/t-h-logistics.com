@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useState, useEffect,useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
@@ -25,6 +25,7 @@ import isPageWithLocaleExists from '@/utils/isPageWithLocaleExists';
 import getRandomBanner from '@/utils/getRandomBanner';
 import getRandomPopularNews from '@/utils/getRandomPopularNews';
 import formatDateTime from '@/utils/formateDateTime';
+import MailModal from '@/components/organisms/ModalMail';
 import getPagesIdWithSameUrl from "@/utils/getPagesIdWithSameUrl"
 
 import DefaultLayout from '@/components/layouts/default';
@@ -32,6 +33,8 @@ import { Crumb } from '@/components/molecules/Breacrumbs';
 import Sidebar from '@/components/organisms/Sidebar';
 import MostPopular from '@/components/organisms/MostPopular';
 import Comments from '@/components/organisms/coments';
+import NotConfirmedModal from '@/components/organisms/NotConfirmedModal';
+
 
 const { publicRuntimeConfig } = getConfig();
 
@@ -124,14 +127,16 @@ const Page = ({
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [errorCode, setErrorCode] = useState<number | null>(null);
   const [isShowNotFoutMessage, setIsShowNotFoutMessage] = useState(false)
+  const [isShowMessageModal, setShowtMessageModal] = useState(false)
   const { NEXT_FRONT_URL, NEXT_MAILER } = publicRuntimeConfig;
   const router = useRouter();
+  const [modalActivationIsVisible, setActivationModalVisible] = useState(false);
   const locale = router.locale === 'ua' ? 'uk' : router.locale;
 
   useEffect(() => {
     setUserComments(comments)
   }, [comments])
-  if(pageRes){
+  if (pageRes) {
     useEffect(() => {
       setIsShowNotFoutMessage(notFoundMessage)
       const incrementPageViews = async (pageId) => {
@@ -144,7 +149,7 @@ const Page = ({
           await axios.post('/api/increment-views', { id: pageId });
           viewedPages.push(pageId);
           Cookies.set('viewedPages', viewedPages.join(','), {
-            expires: 1, 
+            expires: 1,
             sameSite: 'strict',
             secure: true,
           });
@@ -222,6 +227,22 @@ const Page = ({
     return acc;
   }, ``);
 
+
+    async function sendActivationMessage(){
+    let getUserCookies = Cookies.get('user');
+    const user = JSON.parse(getUserCookies);
+
+
+      const sendMessage = server.post("/auth/send-email-confirmation",{
+        email: user.email
+      })
+      setShowtMessageModal(false)
+      setActivationModalVisible(true);
+      setTimeout(() => {
+        setActivationModalVisible(false);
+      }, 3000);
+    }
+
   const shortenedTitle = useMemo<string>(() => {
     return page_title.length > 65
       ? `${page_title.slice(0, 65)}...`
@@ -236,6 +257,7 @@ const Page = ({
       router.push('/login');
       return;
     }
+
 
     // Find the comment text area for this form
     const formElement = e.target; // The form that triggered the event
@@ -254,6 +276,11 @@ const Page = ({
     let getUserCookies = Cookies.get('user');
     const user = JSON.parse(getUserCookies);
     const blogUrl = pageRes[0].attributes.url
+
+    if (!user.confirmed) {
+      return setShowtMessageModal(true)
+    }
+
 
     try {
       let payload;
@@ -381,6 +408,21 @@ const Page = ({
               socialData,
             }}
           >
+                            <MailModal
+                message={$t[locale].auth.successConfirmationMessage}
+                isVisible={modalActivationIsVisible}
+                onClose={() => {
+                  setActivationModalVisible(false)
+                }}
+                />
+            <NotConfirmedModal
+              message={$t[locale].auth.notConfirmedMessage}
+              isVisible={isShowMessageModal}
+              sendMessage={sendActivationMessage}
+              onClose={() => {
+                setShowtMessageModal(false)
+              }}
+            />
             <DefaultLayout>
               {/* В компонент hero передаем заголовок страницы и данные которые там будут преобразованы в breadcrumb */}
               <div className="container-xxl position-relative p-0">
@@ -391,7 +433,7 @@ const Page = ({
                         className="col-12 text-center text-lg-start"
                         style={{ marginTop: '40px', marginBottom: '50px' }}
                       >
-<h1 className="text-white animated d-flex align-items-center flex-wrap slideInLeft">
+                        <h1 className="text-white animated d-flex align-items-center flex-wrap slideInLeft">
                           <Link href={`/blog`}>
                             <h2 className="d-inline text-white heading_title">{$t[locale].blog.all} | </h2>
                           </Link>
@@ -402,10 +444,10 @@ const Page = ({
                             return (
                               <div key={heading.id} className='d-flex gap-2 align-items-center  '>
                                 <Link href={`/blog?heading=${headingName}`}>
-  <h2 className="d-inline heading_title text-white heading_name">
-    {headingName.charAt(0).toUpperCase() + headingName.slice(1)}
-  </h2>
-</Link>
+                                  <h2 className="d-inline heading_title text-white heading_name">
+                                    {headingName.charAt(0).toUpperCase() + headingName.slice(1)}
+                                  </h2>
+                                </Link>
                                 {!isLast && <span className="d-inline heading_title text-white"> | </span>}
                               </div>
                             );
@@ -418,7 +460,7 @@ const Page = ({
                           {shortenedTitle}
                         </h1>
 
-                        
+
                         <nav aria-label="breadcrumb">
                           <ol className="breadcrumb justify-content-center justify-content-lg-start animated slideInLeft">
                             <li className="breadcrumb-item">
@@ -444,23 +486,22 @@ const Page = ({
                 </div>
               </div>
               {errorMessage && (
-                        <div className="error-message">
-                          <h3>
-                            {errorCode != null
-                              ? `${
-                                  errorText[
-                                    Object.keys(message404).find(
-                                      key => message404[key] === errorMessage
-                                    )
-                                  ]
-                                } ${errorCode}`
-                              : errorMessage}
-                          </h3>
-                          {errorCode != null && (
-                            <p className="error-descr">{errorMessage}</p>
-                          )}
-                        </div>
-                      )}
+                <div className="error-message">
+                  <h3>
+                    {errorCode != null
+                      ? `${errorText[
+                      Object.keys(message404).find(
+                        key => message404[key] === errorMessage
+                      )
+                      ]
+                      } ${errorCode}`
+                      : errorMessage}
+                  </h3>
+                  {errorCode != null && (
+                    <p className="error-descr">{errorMessage}</p>
+                  )}
+                </div>
+              )}
 
               <div className="container-xxl">
                 <div className="row smallPaddign">
@@ -490,12 +531,12 @@ const Page = ({
                           <Link className='text-capitalize fw-bold w-auto part  page_heading_page ' href={`/blog?heading=${heading.data?.attributes.Name}`}>{heading.data?.attributes.Name}</Link>
                           <div className='w-auto part'>{formatDateTime(admin_date)}</div>
                           <div className="w-auto comments part" >
-                                    <Link href={`${url}#comment`} className="">
-                                      <img src="https://itc.ua/wp-content/themes/ITC_6.0/images/comment_outline_24.svg" height="24" width="24" alt="comment" />
-                                      <span className="disqus-comment-count" data-disqus-identifier="2259249=">{usersComments.length}</span>
-                                      </Link>
-                            </div>
-                          <div className='w-auto part'><img style={{marginRight: 7}} src="https://itc.ua/wp-content/themes/ITC_6.0/images/eye2.png" height="11" width="17" alt="views icon"></img>{views}</div>
+                            <Link href={`${url}#comment`} className="">
+                              <img src="https://itc.ua/wp-content/themes/ITC_6.0/images/comment_outline_24.svg" height="24" width="24" alt="comment" />
+                              <span className="disqus-comment-count" data-disqus-identifier="2259249=">{usersComments.length}</span>
+                            </Link>
+                          </div>
+                          <div className='w-auto part'><img style={{ marginRight: 7 }} src="https://itc.ua/wp-content/themes/ITC_6.0/images/eye2.png" height="11" width="17" alt="views icon"></img>{views}</div>
 
                         </div>
 
@@ -530,10 +571,10 @@ export async function getServerSideProps({
   let notFoundMessage = false
   const randomBanner = await getRandomBanner(Locale);
   let mostPopular = await getRandomPopularNews(Locale);
-  console.log(mostPopular,"slfaj")
-  
+  console.log(mostPopular, "slfaj")
 
-  if(mostPopular.length===0){
+
+  if (mostPopular.length === 0) {
     mostPopular = await getRandomPopularNews("ru");
   }
   let headings;
@@ -549,13 +590,13 @@ export async function getServerSideProps({
   }
 
   let pageRes = await server.get(getBlogPage(slug, $(Locale)));
-  if(pageRes.data.data.length===0){
+  if (pageRes.data.data.length === 0) {
     notFoundMessage = true
     pageRes = await server.get(getBlogPage(slug, "ru"));
   }
   const strapiMenu = await server.get(getMenu('main'));
 
-  const { menu, allPages, footerMenus, footerGeneral } =await getHeaderFooterMenus(Locale);
+  const { menu, allPages, footerMenus, footerGeneral } = await getHeaderFooterMenus(Locale);
 
   const crumbs = strapiMenu.data.data[0].attributes.items.data;
 

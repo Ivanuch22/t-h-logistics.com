@@ -5,7 +5,12 @@ module.exports = ({ env }) => ({
   app: {
     keys: env.array('APP_KEYS'),
   },
-      webhooks: {
+  webhooks: {
     populateRelations: env.bool('WEBHOOKS_POPULATE_RELATIONS', false),
+  },
+  middleware: {
+    settings: {
+      emailConfirmation: false,
+    },
   },
 }); 
